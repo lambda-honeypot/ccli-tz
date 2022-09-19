@@ -24,13 +24,18 @@ ccli-tz --timezone europe/london --next
 This will create the leadership-schedule for the pool and keys within the config file for the next epoch.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	Run: leader.LeadershipLog,
+	Run: LeadershipLog,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() error {
 	return rootCmd.Execute()
+}
+
+func LeadershipLog(_ *cobra.Command, _ []string) {
+	timeZone := "America/New_York"
+	leader.CreateAndRun(timeZone, &leader.CmdRunner{})
 }
 
 func init() {

@@ -1,36 +1,40 @@
 package leader
 
 import (
+	"encoding/json"
 	"fmt"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
+	"strconv"
 	"strings"
 	"time"
 )
 
 type CommandRunner interface {
-	GetSchedule(command string) (string, error)
+	GetSchedule(period, shelleyGenesisFile, poolId, networkMagic, vrfKeysFile string) (string, error)
 }
 
-type ScheduleConvertor struct {
-	CommandRunner CommandRunner
+type ScheduleRow struct {
+	SlotNumber int
+	TimeZone string
 }
 
-func LeadershipLog(_ *cobra.Command, _ []string) {
-	CreateAndRun()
+func CreateAndRun(timeZone string, cmdRunner CommandRunner) {
+	schedule := CalcTZSchedule(timeZone, cmdRunner)
+	PrintSchedule(schedule)
 }
 
-func CreateAndRun() {
-	cmdRunner := &CmdRun{}
-	sc := &ScheduleConvertor{cmdRunner}
-	timeZone := "America/New_York"
-	schedule := sc.CalcTZSchedule(timeZone)
-	fmt.Println(schedule)
+func PrintSchedule(schedule []ScheduleRow) {
+	b, err := json.MarshalIndent(schedule, "", "  ")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(string(b))
 }
 
-func (sc *ScheduleConvertor) CalcTZSchedule(timeZone string) string {
-	var returnStr string
-	rawSchedule, _ := sc.CommandRunner.GetSchedule("")
+func CalcTZSchedule(timeZone string, runner CommandRunner) []ScheduleRow {
+	var rows []ScheduleRow
+	rawSchedule, _ := runner.GetSchedule()
 	lines := strings.Split(rawSchedule, "\n")
 	for _, line := range lines[2:] {
 		spaceSplit := strings.Split(strings.TrimSpace(line), "  ")
@@ -39,10 +43,15 @@ func (sc *ScheduleConvertor) CalcTZSchedule(timeZone string) string {
 		if err != nil {
 			log.Errorf("failed with err: %v", err)
 		}
-		newLine := strings.TrimSpace(spaceSplit[0]) + " " + convertedTime
-		returnStr += newLine
+		//newLine := strings.TrimSpace(spaceSplit[0]) + " " + convertedTime + "\n"
+		slot, err := strconv.Atoi(strings.TrimSpace(spaceSplit[0]))
+		if err != nil {
+			log.Errorf("failed with err: %v", err)
+		}
+		row := ScheduleRow{SlotNumber: slot, TimeZone: convertedTime}
+		rows = append(rows, row)
 	}
-	return returnStr
+	return rows
 }
 
 func convertTime(timeStamp, timeZone string) (string, error) {
@@ -56,23 +65,4 @@ func convertTime(timeStamp, timeZone string) (string, error) {
 		return timeStamp, err
 	}
 	return t.In(loc).Format(layout), nil
-}
-
-type CmdRun struct {
-}
-
-func (*CmdRun) GetSchedule(_ string) (string, error) {
-	return `     SlotNo                          UTC Time              
--------------------------------------------------------------
-     71029049                   2022-09-08 00:02:20 UTC
-     71102016                   2022-09-08 20:18:27 UTC
-     71108282                   2022-09-08 22:02:53 UTC
-     71223290                   2022-09-10 05:59:41 UTC
-     71226203                   2022-09-10 06:48:14 UTC
-     71267198                   2022-09-10 18:11:29 UTC
-     71351113                   2022-09-11 17:30:04 UTC
-     71416799                   2022-09-12 11:44:50 UTC
-     71419149                   2022-09-12 12:24:00 UTC
-     71422743                   2022-09-12 13:23:54 UTC
-     71425763                   2022-09-12 14:14:14 UTC`, nil
 }

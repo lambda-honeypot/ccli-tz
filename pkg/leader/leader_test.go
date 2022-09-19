@@ -42,14 +42,24 @@ var _ = Describe("CreateAndRun", func() {
 	})
 	Context("InitialiseConfigFile", func() {
 		It("should attempt to create expected config file", func() {
-			mockCommandRunner.EXPECT().GetSchedule("").Return(rawSlotOutput, nil)
+			period := "--current"
+			shelleyGenesisFile := "shelley-genesis.json"
+			poolId := "5be57ce6d1225697f4ad4090355f0a72d6e1e2446d1d768f36aa118c"
+			networkMagic := "--mainnet"
+			vrfKeysFile := "vrf.skey"
+			mockCommandRunner.EXPECT().GetSchedule(period, shelleyGenesisFile, poolId, networkMagic, vrfKeysFile).Return(rawSlotOutput, nil)
 			timeZone := "America/New_York"
 			CreateAndRun(timeZone, mockCommandRunner)
 		})
 	})
 	Context("CalcTZSchedule", func() {
 		It("should attempt to create expected config file", func() {
-			mockCommandRunner.EXPECT().GetSchedule("").Return(rawSlotOutput, nil)
+			period := "--current"
+			shelleyGenesisFile := "shelley-genesis.json"
+			poolId := "5be57ce6d1225697f4ad4090355f0a72d6e1e2446d1d768f36aa118c"
+			networkMagic := "--mainnet"
+			vrfKeysFile := "vrf.skey"
+			mockCommandRunner.EXPECT().GetSchedule(period, shelleyGenesisFile, poolId, networkMagic, vrfKeysFile).Return(rawSlotOutput, nil)
 			timeZone := "America/New_York"
 			schedule := CalcTZSchedule(timeZone, mockCommandRunner)
 			Expect(schedule).To(Equal(""))

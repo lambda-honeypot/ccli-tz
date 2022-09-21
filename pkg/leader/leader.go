@@ -26,7 +26,7 @@ func CreateAndRun(args []string, testnetMagic string, cmdRunner CommandRunner, d
 	poolId := viper.GetString("stakePoolID")
 	vrfKeysFile := viper.GetString("VRFSigningKeyFile")
 	timeZone := viper.GetString("timeZone")
-	fmt.Println(fmt.Sprintf("Calculating for pool: %s"))
+	fmt.Println(fmt.Sprintf("Calculating for pool: %s", poolId))
 	schedule, err := CalcTZSchedule(timeZone, period, shelleyGenesisFile, poolId, vrfKeysFile, testnetMagic, cmdRunner, dryRun)
 	if dryRun {
 		return nil

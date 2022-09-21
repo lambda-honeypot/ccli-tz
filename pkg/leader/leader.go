@@ -15,6 +15,7 @@ type CommandRunner interface {
 }
 
 type ScheduleRow struct {
+	BlockCount int
 	SlotNumber int
 	TimeZone   string
 }
@@ -22,11 +23,10 @@ type ScheduleRow struct {
 func CreateAndRun(args []string, testnetMagic string, cmdRunner CommandRunner, dryRun bool) error {
 	period := "--" + args[0]
 	shelleyGenesisFile := viper.GetString("shelleyGenesisFile")
-	something := viper.Get("stakePoolID")
 	poolId := viper.GetString("stakePoolID")
 	vrfKeysFile := viper.GetString("VRFSigningKeyFile")
 	timeZone := viper.GetString("timeZone")
-	fmt.Println(something)
+	fmt.Println(fmt.Sprintf("Calculating for pool: %s"))
 	schedule, err := CalcTZSchedule(timeZone, period, shelleyGenesisFile, poolId, vrfKeysFile, testnetMagic, cmdRunner, dryRun)
 	if dryRun {
 		return nil
@@ -63,8 +63,11 @@ func CalcTZSchedule(timeZone, period, shelleyGenesisFile, poolId, vrfKeysFile, t
 		return rows, err
 	}
 	lines := strings.Split(rawSchedule, "\n")
-	for _, line := range lines[2:] {
+	for i, line := range lines[2:] {
 		spaceSplit := strings.Split(strings.TrimSpace(line), "  ")
+		if len(spaceSplit) != 2 {
+			continue
+		}
 		rawTS := strings.TrimSpace(spaceSplit[len(spaceSplit)-1])
 		convertedTime, err := convertTime(rawTS, timeZone)
 		if err != nil {
@@ -75,7 +78,7 @@ func CalcTZSchedule(timeZone, period, shelleyGenesisFile, poolId, vrfKeysFile, t
 		if err != nil {
 			log.Errorf("failed with err: %v", err)
 		}
-		row := ScheduleRow{SlotNumber: slot, TimeZone: convertedTime}
+		row := ScheduleRow{BlockCount: i + 1, SlotNumber: slot, TimeZone: convertedTime}
 		rows = append(rows, row)
 	}
 	return rows, nil

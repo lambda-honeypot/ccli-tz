@@ -14,9 +14,10 @@ type CfgCreator interface {
 }
 
 type CfgYaml struct {
-	VRFSigningKeyFile string
-	StakePoolID       string
-	GenesisFile       string
+	VRFSigningKeyFile string `yaml:"VRFSigningKeyFile"`
+	StakePoolID       string `yaml:"stakePoolID"`
+	GenesisFile       string `yaml:"shelleyGenesisFile"`
+	TimeZone          string `yaml:"timeZone"`
 }
 
 func InitialiseConfigFile(creator CfgCreator) {
@@ -37,6 +38,7 @@ func writeTemplateConfig(filePath string, creator CfgCreator) error {
 		VRFSigningKeyFile: "/path/to/vrf-signing-key-file/vrf.skey",
 		StakePoolID:       "<insert pool id>",
 		GenesisFile:       "/path/to/genesis-file/shelley-genesis.json",
+		TimeZone:          "Europe/London",
 	}
 
 	yamlData, err := yaml.Marshal(&cfgYml)

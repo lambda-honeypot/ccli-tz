@@ -4,23 +4,38 @@ import (
 	"encoding/json"
 	"fmt"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"strconv"
 	"strings"
 	"time"
 )
 
 type CommandRunner interface {
-	GetSchedule(period, shelleyGenesisFile, poolId, networkMagic, vrfKeysFile string) (string, error)
+	GetSchedule(period, shelleyGenesisFile, poolId, vrfKeysFile, testnetMagic string, dryRun bool) (string, error)
 }
 
 type ScheduleRow struct {
 	SlotNumber int
-	TimeZone string
+	TimeZone   string
 }
 
-func CreateAndRun(timeZone string, cmdRunner CommandRunner) {
-	schedule := CalcTZSchedule(timeZone, cmdRunner)
+func CreateAndRun(args []string, testnetMagic string, cmdRunner CommandRunner, dryRun bool) error {
+	period := "--" + args[0]
+	shelleyGenesisFile := viper.GetString("shelleyGenesisFile")
+	something := viper.Get("stakePoolID")
+	poolId := viper.GetString("stakePoolID")
+	vrfKeysFile := viper.GetString("VRFSigningKeyFile")
+	timeZone := viper.GetString("timeZone")
+	fmt.Println(something)
+	schedule, err := CalcTZSchedule(timeZone, period, shelleyGenesisFile, poolId, vrfKeysFile, testnetMagic, cmdRunner, dryRun)
+	if dryRun {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
 	PrintSchedule(schedule)
+	return nil
 }
 
 func PrintSchedule(schedule []ScheduleRow) {
@@ -32,9 +47,20 @@ func PrintSchedule(schedule []ScheduleRow) {
 	fmt.Println(string(b))
 }
 
-func CalcTZSchedule(timeZone string, runner CommandRunner) []ScheduleRow {
+func CalcTZSchedule(timeZone, period, shelleyGenesisFile, poolId, vrfKeysFile, testnetMagic string, runner CommandRunner, dryRun bool) ([]ScheduleRow, error) {
 	var rows []ScheduleRow
-	rawSchedule, _ := runner.GetSchedule()
+	//period := "--current"
+	//shelleyGenesisFile := "/var/lib/cardano/mainnet-shelley-genesis.json"
+	//poolId := "5be57ce6d1225697f4ad4090355f0a72d6e1e2446d1d768f36aa118c"
+	//networkMagic := "--mainnet"
+	//vrfKeysFile := "vrf.skey"
+	rawSchedule, err := runner.GetSchedule(period, shelleyGenesisFile, poolId, vrfKeysFile, testnetMagic, dryRun)
+	if dryRun {
+		return rows, nil
+	}
+	if err != nil {
+		return rows, err
+	}
 	lines := strings.Split(rawSchedule, "\n")
 	for _, line := range lines[2:] {
 		spaceSplit := strings.Split(strings.TrimSpace(line), "  ")
@@ -51,7 +77,7 @@ func CalcTZSchedule(timeZone string, runner CommandRunner) []ScheduleRow {
 		row := ScheduleRow{SlotNumber: slot, TimeZone: convertedTime}
 		rows = append(rows, row)
 	}
-	return rows
+	return rows, nil
 }
 
 func convertTime(timeStamp, timeZone string) (string, error) {

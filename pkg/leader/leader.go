@@ -5,6 +5,7 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -15,16 +16,16 @@ type CommandRunner interface {
 }
 
 type ScheduleRow struct {
-	BlockCount int
-	SlotNumber int
-	TimeZone   string
+	BlockCount    int
+	SlotNumber    int
+	ScheduledTime string
 }
 
 func CreateAndRun(args []string, testnetMagic string, cmdRunner CommandRunner, dryRun bool) error {
 	period := "--" + args[0]
-	shelleyGenesisFile := viper.GetString("shelleyGenesisFile")
+	shelleyGenesisFile := normaliseHomeDir(viper.GetString("shelleyGenesisFile"))
+	vrfKeysFile := normaliseHomeDir(viper.GetString("VRFSigningKeyFile"))
 	poolId := viper.GetString("stakePoolID")
-	vrfKeysFile := viper.GetString("VRFSigningKeyFile")
 	timeZone := viper.GetString("timeZone")
 	fmt.Println(fmt.Sprintf("Calculating for pool: %s", poolId))
 	schedule, err := CalcTZSchedule(timeZone, period, shelleyGenesisFile, poolId, vrfKeysFile, testnetMagic, cmdRunner, dryRun)
@@ -36,6 +37,18 @@ func CreateAndRun(args []string, testnetMagic string, cmdRunner CommandRunner, d
 	}
 	PrintSchedule(schedule)
 	return nil
+}
+
+func normaliseHomeDir(file string) string {
+	if strings.HasPrefix(file, "~") {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			log.Errorf("failed to get userhome dir with: %v", err)
+			return file
+		}
+		return strings.Replace(file, "~", home, 1)
+	}
+	return file
 }
 
 func PrintSchedule(schedule []ScheduleRow) {
@@ -69,9 +82,6 @@ func CalcTZSchedule(timeZone, period, shelleyGenesisFile, poolId, vrfKeysFile, t
 		if len(spaceSplit) != 2 {
 			continue
 		}
-		fmt.Println("start:" + line + ":end")
-		fmt.Println(spaceSplit)
-		fmt.Println(len(spaceSplit))
 		rawTS := strings.TrimSpace(spaceSplit[len(spaceSplit)-1])
 		convertedTime, err := convertTime(rawTS, timeZone)
 		if err != nil {
@@ -81,7 +91,7 @@ func CalcTZSchedule(timeZone, period, shelleyGenesisFile, poolId, vrfKeysFile, t
 		if err != nil {
 			log.Errorf("failed to convert slot num with: %v", err)
 		}
-		row := ScheduleRow{BlockCount: i + 1, SlotNumber: slot, TimeZone: convertedTime}
+		row := ScheduleRow{BlockCount: i + 1, SlotNumber: slot, ScheduledTime: convertedTime}
 		rows = append(rows, row)
 	}
 	return rows, nil

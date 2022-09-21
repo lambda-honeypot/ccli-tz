@@ -63,7 +63,9 @@ func CalcTZSchedule(timeZone, period, shelleyGenesisFile, poolId, vrfKeysFile, t
 		//if len(spaceSplit) != 2 {
 		//	continue
 		//}
-		fmt.Println(line)
+		fmt.Println("start:" + line + ":end")
+		fmt.Println(spaceSplit)
+		fmt.Println(len(spaceSplit))
 		rawTS := strings.TrimSpace(spaceSplit[len(spaceSplit)-1])
 		convertedTime, err := convertTime(rawTS, timeZone)
 		if err != nil {

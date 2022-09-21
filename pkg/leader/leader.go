@@ -59,10 +59,16 @@ func CalcTZSchedule(timeZone, period, shelleyGenesisFile, poolId, vrfKeysFile, t
 	}
 	lines := strings.Split(rawSchedule, "\n")
 	for i, line := range lines[2:] {
-		spaceSplit := strings.Split(strings.TrimSpace(line), "  ")
-		//if len(spaceSplit) != 2 {
-		//	continue
-		//}
+		rawSpaceSplit := strings.Split(strings.TrimSpace(line), "  ")
+		var spaceSplit = []string{}
+		for _, elem := range rawSpaceSplit {
+			if strings.TrimSpace(elem) != "" {
+				spaceSplit = append(spaceSplit, elem)
+			}
+		}
+		if len(spaceSplit) != 2 {
+			continue
+		}
 		fmt.Println("start:" + line + ":end")
 		fmt.Println(spaceSplit)
 		fmt.Println(len(spaceSplit))

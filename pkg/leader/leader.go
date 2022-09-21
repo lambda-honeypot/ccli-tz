@@ -59,6 +59,7 @@ func CalcTZSchedule(timeZone, period, shelleyGenesisFile, poolId, vrfKeysFile, t
 		return rows, nil
 	}
 	if err != nil {
+		log.Errorf("failed to run leader log with: %s", rawSchedule)
 		return rows, err
 	}
 	lines := strings.Split(rawSchedule, "\n")

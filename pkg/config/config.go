@@ -5,7 +5,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const FileName = ".ccli-tz"
+const FileName = ".ccli-tz.yaml"
 
 type CfgCreator interface {
 	GetConfigFilePath() (string, error)

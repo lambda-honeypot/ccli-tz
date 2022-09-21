@@ -49,11 +49,6 @@ func PrintSchedule(schedule []ScheduleRow) {
 
 func CalcTZSchedule(timeZone, period, shelleyGenesisFile, poolId, vrfKeysFile, testnetMagic string, runner CommandRunner, dryRun bool) ([]ScheduleRow, error) {
 	var rows []ScheduleRow
-	//period := "--current"
-	//shelleyGenesisFile := "/var/lib/cardano/mainnet-shelley-genesis.json"
-	//poolId := "5be57ce6d1225697f4ad4090355f0a72d6e1e2446d1d768f36aa118c"
-	//networkMagic := "--mainnet"
-	//vrfKeysFile := "vrf.skey"
 	rawSchedule, err := runner.GetSchedule(period, shelleyGenesisFile, poolId, vrfKeysFile, testnetMagic, dryRun)
 	if dryRun {
 		return rows, nil
@@ -65,18 +60,18 @@ func CalcTZSchedule(timeZone, period, shelleyGenesisFile, poolId, vrfKeysFile, t
 	lines := strings.Split(rawSchedule, "\n")
 	for i, line := range lines[2:] {
 		spaceSplit := strings.Split(strings.TrimSpace(line), "  ")
-		if len(spaceSplit) != 2 {
-			continue
-		}
+		//if len(spaceSplit) != 2 {
+		//	continue
+		//}
+		fmt.Println(line)
 		rawTS := strings.TrimSpace(spaceSplit[len(spaceSplit)-1])
 		convertedTime, err := convertTime(rawTS, timeZone)
 		if err != nil {
-			log.Errorf("failed with err: %v", err)
+			log.Errorf("failed to convert time with: %v", err)
 		}
-		//newLine := strings.TrimSpace(spaceSplit[0]) + " " + convertedTime + "\n"
 		slot, err := strconv.Atoi(strings.TrimSpace(spaceSplit[0]))
 		if err != nil {
-			log.Errorf("failed with err: %v", err)
+			log.Errorf("failed to convert slot num with: %v", err)
 		}
 		row := ScheduleRow{BlockCount: i + 1, SlotNumber: slot, TimeZone: convertedTime}
 		rows = append(rows, row)

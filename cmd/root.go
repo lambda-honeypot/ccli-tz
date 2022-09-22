@@ -42,8 +42,8 @@ func LeadershipLog(command *cobra.Command, args []string) {
 		log.Fatalf("failed to get testnet string: %v", err)
 	}
 	dryRun, err := command.Flags().GetBool("dry-run")
-
-	err = leader.CreateAndRun(args, testnetMagic, &leader.CmdRunner{}, dryRun)
+	cfg := config.ReadConfig()
+	err = leader.CreateAndRun(args, testnetMagic, &leader.CmdRunner{}, dryRun, cfg)
 	if err != nil {
 		log.Fatalf("failed to run leadership log with: %v", err)
 	}

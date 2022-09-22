@@ -34,16 +34,16 @@ func (m *MockCommandRunner) EXPECT() *MockCommandRunnerMockRecorder {
 }
 
 // GetSchedule mocks base method.
-func (m *MockCommandRunner) GetSchedule(period, shelleyGenesisFile, poolId, networkMagic, vrfKeysFile string) (string, error) {
+func (m *MockCommandRunner) GetSchedule(period, shelleyGenesisFile, poolId, vrfKeysFile, testnetMagic string, dryRun bool) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSchedule", period, shelleyGenesisFile, poolId, networkMagic, vrfKeysFile)
+	ret := m.ctrl.Call(m, "GetSchedule", period, shelleyGenesisFile, poolId, vrfKeysFile, testnetMagic, dryRun)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSchedule indicates an expected call of GetSchedule.
-func (mr *MockCommandRunnerMockRecorder) GetSchedule(period, shelleyGenesisFile, poolId, networkMagic, vrfKeysFile interface{}) *gomock.Call {
+func (mr *MockCommandRunnerMockRecorder) GetSchedule(period, shelleyGenesisFile, poolId, vrfKeysFile, testnetMagic, dryRun interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSchedule", reflect.TypeOf((*MockCommandRunner)(nil).GetSchedule), period, shelleyGenesisFile, poolId, networkMagic, vrfKeysFile)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSchedule", reflect.TypeOf((*MockCommandRunner)(nil).GetSchedule), period, shelleyGenesisFile, poolId, vrfKeysFile, testnetMagic, dryRun)
 }

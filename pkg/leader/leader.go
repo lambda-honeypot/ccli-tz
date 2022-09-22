@@ -3,9 +3,8 @@ package leader
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/lambda-honeypot/ccli-tz/pkg/config"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -21,12 +20,16 @@ type ScheduleRow struct {
 	ScheduledTime string
 }
 
-func CreateAndRun(args []string, testnetMagic string, cmdRunner CommandRunner, dryRun bool) error {
+type ConfigGetter interface {
+	GetConfig() config.CfgYaml
+}
+
+func CreateAndRun(args []string, testnetMagic string, cmdRunner CommandRunner, dryRun bool, cfg *config.CfgYaml) error {
 	period := "--" + args[0]
-	shelleyGenesisFile := normaliseHomeDir(viper.GetString("shelleyGenesisFile"))
-	vrfKeysFile := normaliseHomeDir(viper.GetString("VRFSigningKeyFile"))
-	poolId := viper.GetString("stakePoolID")
-	timeZone := viper.GetString("timeZone")
+	shelleyGenesisFile := cfg.GenesisFile
+	vrfKeysFile := cfg.VRFSigningKeyFile
+	poolId := cfg.StakePoolID
+	timeZone := cfg.TimeZone
 	fmt.Println(fmt.Sprintf("Calculating for pool: %s", poolId))
 	schedule, err := CalcTZSchedule(timeZone, period, shelleyGenesisFile, poolId, vrfKeysFile, testnetMagic, cmdRunner, dryRun)
 	if dryRun {
@@ -37,18 +40,6 @@ func CreateAndRun(args []string, testnetMagic string, cmdRunner CommandRunner, d
 	}
 	PrintSchedule(schedule)
 	return nil
-}
-
-func normaliseHomeDir(file string) string {
-	if strings.HasPrefix(file, "~") {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			log.Errorf("failed to get userhome dir with: %v", err)
-			return file
-		}
-		return strings.Replace(file, "~", home, 1)
-	}
-	return file
 }
 
 func PrintSchedule(schedule []ScheduleRow) {

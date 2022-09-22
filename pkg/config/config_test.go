@@ -9,9 +9,10 @@ import (
 	"testing"
 )
 
-const sampleString = `vrfsigningkeyfile: /path/to/vrf-signing-key-file/vrf.skey
-stakepoolid: <insert pool id>
-genesisfile: /path/to/genesis-file/shelley-genesis.json
+const sampleString = `VRFSigningKeyFile: /path/to/vrf-signing-key-file/vrf.skey
+stakePoolID: <insert pool id>
+shelleyGenesisFile: /path/to/genesis-file/shelley-genesis.json
+timeZone: Europe/London
 `
 
 func TestConfig(t *testing.T) {

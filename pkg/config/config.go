@@ -2,7 +2,10 @@ package config
 
 import (
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
+	"os"
+	"strings"
 )
 
 const FileName = ".ccli-tz.yaml"
@@ -18,6 +21,19 @@ type CfgYaml struct {
 	StakePoolID       string `yaml:"stakePoolID"`
 	GenesisFile       string `yaml:"shelleyGenesisFile"`
 	TimeZone          string `yaml:"timeZone"`
+}
+
+func ReadConfig() *CfgYaml {
+	shelleyGenesisFile := normaliseHomeDir(viper.GetString("shelleyGenesisFile"))
+	vrfKeysFile := normaliseHomeDir(viper.GetString("VRFSigningKeyFile"))
+	poolId := viper.GetString("stakePoolID")
+	timeZone := viper.GetString("timeZone")
+	return &CfgYaml{
+		VRFSigningKeyFile: vrfKeysFile,
+		StakePoolID:       poolId,
+		GenesisFile:       shelleyGenesisFile,
+		TimeZone:          timeZone,
+	}
 }
 
 func InitialiseConfigFile(creator CfgCreator) {
@@ -56,4 +72,16 @@ func writeTemplateConfig(filePath string, creator CfgCreator) error {
 	}
 	err = creator.WriteFile(filePath, yamlData)
 	return err
+}
+
+func normaliseHomeDir(file string) string {
+	if strings.HasPrefix(file, "~") {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			log.Errorf("failed to get userhome dir with: %v", err)
+			return file
+		}
+		return strings.Replace(file, "~", home, 1)
+	}
+	return file
 }

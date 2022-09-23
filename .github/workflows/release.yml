@@ -1,20 +1,19 @@
-name: goreleaser
-
+name: Bump version
 on:
   push:
-    # run only against tags
-    tags:
-      - '*'
-
-permissions:
-  contents: write
-  # packages: write
-  # issues: write
-
+    branches:
+      - master
 jobs:
-  goreleaser:
+  go-releaser:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          default_bump: minor
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
@@ -31,5 +30,3 @@ jobs:
           args: release --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Your GoReleaser Pro key, if you are using the 'goreleaser-pro' distribution
-          # GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}

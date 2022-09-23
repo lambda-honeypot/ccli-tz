@@ -13,7 +13,7 @@ ifeq (, $(shell which fieldalignment))
 endif
 
 build:
-	CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o ccli-tz cmd/main/main.go
+	CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o ccli-tz main.go
 
 generate-mocks:
 	mockgen -source=pkg/config/config.go -destination=pkg/config/mocks/config.go

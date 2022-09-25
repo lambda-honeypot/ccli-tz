@@ -8,6 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	config "github.com/lambda-honeypot/ccli-tz/pkg/config"
 )
 
 // MockCommandRunner is a mock of CommandRunner interface.
@@ -34,16 +35,53 @@ func (m *MockCommandRunner) EXPECT() *MockCommandRunnerMockRecorder {
 }
 
 // GetSchedule mocks base method.
-func (m *MockCommandRunner) GetSchedule(period, shelleyGenesisFile, poolId, vrfKeysFile, testnetMagic string, dryRun bool) (string, error) {
+func (m *MockCommandRunner) GetSchedule(trimmedArgs []string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSchedule", period, shelleyGenesisFile, poolId, vrfKeysFile, testnetMagic, dryRun)
+	ret := m.ctrl.Call(m, "GetSchedule", trimmedArgs)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSchedule indicates an expected call of GetSchedule.
-func (mr *MockCommandRunnerMockRecorder) GetSchedule(period, shelleyGenesisFile, poolId, vrfKeysFile, testnetMagic, dryRun interface{}) *gomock.Call {
+func (mr *MockCommandRunnerMockRecorder) GetSchedule(trimmedArgs interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSchedule", reflect.TypeOf((*MockCommandRunner)(nil).GetSchedule), period, shelleyGenesisFile, poolId, vrfKeysFile, testnetMagic, dryRun)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSchedule", reflect.TypeOf((*MockCommandRunner)(nil).GetSchedule), trimmedArgs)
+}
+
+// MockConfigGetter is a mock of ConfigGetter interface.
+type MockConfigGetter struct {
+	ctrl     *gomock.Controller
+	recorder *MockConfigGetterMockRecorder
+}
+
+// MockConfigGetterMockRecorder is the mock recorder for MockConfigGetter.
+type MockConfigGetterMockRecorder struct {
+	mock *MockConfigGetter
+}
+
+// NewMockConfigGetter creates a new mock instance.
+func NewMockConfigGetter(ctrl *gomock.Controller) *MockConfigGetter {
+	mock := &MockConfigGetter{ctrl: ctrl}
+	mock.recorder = &MockConfigGetterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockConfigGetter) EXPECT() *MockConfigGetterMockRecorder {
+	return m.recorder
+}
+
+// GetConfig mocks base method.
+func (m *MockConfigGetter) GetConfig() config.CfgYaml {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetConfig")
+	ret0, _ := ret[0].(config.CfgYaml)
+	return ret0
+}
+
+// GetConfig indicates an expected call of GetConfig.
+func (mr *MockConfigGetterMockRecorder) GetConfig() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConfig", reflect.TypeOf((*MockConfigGetter)(nil).GetConfig))
 }

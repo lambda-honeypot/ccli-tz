@@ -11,7 +11,7 @@ import (
 )
 
 type CommandRunner interface {
-	GetSchedule(period, shelleyGenesisFile, poolId, vrfKeysFile, testnetMagic string, dryRun bool) (string, error)
+	GetSchedule(trimmedArgs []string) (string, error)
 }
 
 type ScheduleRow struct {
@@ -24,22 +24,29 @@ type ConfigGetter interface {
 	GetConfig() config.CfgYaml
 }
 
-func CreateAndRun(args []string, testnetMagic string, cmdRunner CommandRunner, dryRun bool, cfg *config.CfgYaml) error {
+func CreateAndRun(args []string, testnetMagic string, cmdRunner CommandRunner, cfg *config.CfgYaml) error {
 	period := "--" + args[0]
 	shelleyGenesisFile := cfg.GenesisFile
 	vrfKeysFile := cfg.VRFSigningKeyFile
-	poolId := cfg.StakePoolID
+	poolID := cfg.StakePoolID
 	timeZone := cfg.TimeZone
-	fmt.Println(fmt.Sprintf("Calculating for pool: %s", poolId))
-	schedule, err := CalcTZSchedule(timeZone, period, shelleyGenesisFile, poolId, vrfKeysFile, testnetMagic, cmdRunner, dryRun)
-	if dryRun {
-		return nil
-	}
+	fmt.Println(fmt.Sprintf("Calculating for pool: %s", poolID))
+	trimmedArgs := CalculateArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic)
+	schedule, err := CalcTZSchedule(timeZone, trimmedArgs, cmdRunner)
 	if err != nil {
 		return err
 	}
 	PrintSchedule(schedule)
 	return nil
+}
+
+func LogOutParams(args []string, testnetMagic string, cfg *config.CfgYaml) {
+	period := "--" + args[0]
+	shelleyGenesisFile := cfg.GenesisFile
+	vrfKeysFile := cfg.VRFSigningKeyFile
+	poolID := cfg.StakePoolID
+	trimmedArgs := CalculateArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic)
+	log.Infof("dry-run, would have executed:\n\ncardano-cli %v", trimmedArgs)
 }
 
 func PrintSchedule(schedule []ScheduleRow) {
@@ -51,41 +58,49 @@ func PrintSchedule(schedule []ScheduleRow) {
 	fmt.Println(string(b))
 }
 
-func CalcTZSchedule(timeZone, period, shelleyGenesisFile, poolId, vrfKeysFile, testnetMagic string, runner CommandRunner, dryRun bool) ([]ScheduleRow, error) {
+func CalcTZSchedule(timeZone string, trimmedArgs []string, runner CommandRunner) ([]ScheduleRow, error) {
 	var rows []ScheduleRow
-	rawSchedule, err := runner.GetSchedule(period, shelleyGenesisFile, poolId, vrfKeysFile, testnetMagic, dryRun)
-	if dryRun {
-		return rows, nil
-	}
+	//trimmedArgs := CalculateArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic)
+	rawSchedule, err := runner.GetSchedule(trimmedArgs)
 	if err != nil {
 		log.Errorf("failed to run leader log with: %s", rawSchedule)
 		return rows, err
 	}
 	lines := strings.Split(rawSchedule, "\n")
 	for i, line := range lines[2:] {
-		rawSpaceSplit := strings.Split(strings.TrimSpace(line), "  ")
-		var spaceSplit = []string{}
-		for _, elem := range rawSpaceSplit {
-			if strings.TrimSpace(elem) != "" {
-				spaceSplit = append(spaceSplit, elem)
-			}
-		}
+		spaceSplit := splitLine(line)
 		if len(spaceSplit) != 2 {
 			continue
 		}
-		rawTS := strings.TrimSpace(spaceSplit[len(spaceSplit)-1])
-		convertedTime, err := convertTime(rawTS, timeZone)
-		if err != nil {
-			log.Errorf("failed to convert time with: %v", err)
-		}
-		slot, err := strconv.Atoi(strings.TrimSpace(spaceSplit[0]))
-		if err != nil {
-			log.Errorf("failed to convert slot num with: %v", err)
-		}
-		row := ScheduleRow{BlockCount: i + 1, SlotNumber: slot, ScheduledTime: convertedTime}
+		row := createRow(timeZone, spaceSplit, i)
 		rows = append(rows, row)
 	}
 	return rows, nil
+}
+
+func splitLine(line string) []string {
+	rawSpaceSplit := strings.Split(strings.TrimSpace(line), "  ")
+	var spaceSplit = []string{}
+	for _, elem := range rawSpaceSplit {
+		if strings.TrimSpace(elem) != "" {
+			spaceSplit = append(spaceSplit, elem)
+		}
+	}
+	return spaceSplit
+}
+
+func createRow(timeZone string, spaceSplit []string, i int) ScheduleRow {
+	rawTS := strings.TrimSpace(spaceSplit[len(spaceSplit)-1])
+	convertedTime, err := convertTime(rawTS, timeZone)
+	if err != nil {
+		log.Errorf("failed to convert time with: %v", err)
+	}
+	slot, err := strconv.Atoi(strings.TrimSpace(spaceSplit[0]))
+	if err != nil {
+		log.Errorf("failed to convert slot num with: %v", err)
+	}
+	row := ScheduleRow{BlockCount: i + 1, SlotNumber: slot, ScheduledTime: convertedTime}
+	return row
 }
 
 func convertTime(timeStamp, timeZone string) (string, error) {

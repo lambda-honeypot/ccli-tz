@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/lambda-honeypot/ccli-tz/pkg/config"
 	"github.com/lambda-honeypot/ccli-tz/pkg/leader"
-	log "github.com/sirupsen/logrus"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -26,7 +25,8 @@ This will create the leadership-schedule for the pool and keys within the config
 	Args: cobra.ExactArgs(1),
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	Run: LeadershipLog,
+	RunE:    LeadershipLog,
+	PreRunE: initConfig,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -35,35 +35,46 @@ func Execute() error {
 	return rootCmd.Execute()
 }
 
-func LeadershipLog(command *cobra.Command, args []string) {
-	validateArgs(args)
+func LeadershipLog(command *cobra.Command, args []string) error {
+	err := validateArgs(args)
+	if err != nil {
+		return err
+	}
 	testnetMagic, err := command.Flags().GetString("testnet-magic")
 	if err != nil {
-		log.Fatalf("failed to get testnet string: %v", err)
+		return fmt.Errorf("failed to get testnet string: %v", err)
 	}
 	dryRun, err := command.Flags().GetBool("dry-run")
-	cfg := config.ReadConfig()
-	err = leader.CreateAndRun(args, testnetMagic, &leader.CmdRunner{}, dryRun, cfg)
 	if err != nil {
-		log.Fatalf("failed to run leadership log with: %v", err)
+		return err
 	}
+	cfg := config.ReadConfig()
+	if dryRun {
+		leader.LogOutParams(args, testnetMagic, cfg)
+	} else {
+		err = leader.CreateAndRun(args, testnetMagic, &leader.CmdRunner{}, cfg)
+	}
+	if err != nil {
+		return fmt.Errorf("failed to run leadership log with: %v", err)
+	}
+	return nil
 }
 
-func validateArgs(args []string) {
+func validateArgs(args []string) error {
 	validValues := []string{"current", "next"}
 	if len(args) != 1 {
-		log.Fatalf("incorrect number of args. Got %d expected 1", len(args))
+		return fmt.Errorf("incorrect number of args. Got %d expected 1", len(args))
 	}
 	for _, value := range validValues {
 		if args[0] == value {
-			return
+			return nil
 		}
 	}
-	log.Fatalf("incorrect arg supplied. Got `%s` but expect one of %v", args[0], validValues)
+	return fmt.Errorf("incorrect arg supplied. Got `%s` but expect one of %v", args[0], validValues)
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
+	//cobra.OnInitialize(initConfig)
 
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
@@ -80,7 +91,7 @@ func init() {
 }
 
 // initConfig reads in config file and ENV variables if set.
-func initConfig() {
+func initConfig(_ *cobra.Command, _ []string) error {
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
@@ -99,9 +110,10 @@ func initConfig() {
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
-	} else {
-		log.Fatalf("failed to read config file with err: %v", err)
+	var err error
+	if err = viper.ReadInConfig(); err == nil {
+		_, err = fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
+		return err
 	}
+	return fmt.Errorf("failed to read config file with err: %v", err)
 }

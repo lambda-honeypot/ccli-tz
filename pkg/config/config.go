@@ -26,11 +26,11 @@ type CfgYaml struct {
 func ReadConfig() *CfgYaml {
 	shelleyGenesisFile := normaliseHomeDir(viper.GetString("shelleyGenesisFile"))
 	vrfKeysFile := normaliseHomeDir(viper.GetString("VRFSigningKeyFile"))
-	poolId := viper.GetString("stakePoolID")
+	poolID := viper.GetString("stakePoolID")
 	timeZone := viper.GetString("timeZone")
 	return &CfgYaml{
 		VRFSigningKeyFile: vrfKeysFile,
-		StakePoolID:       poolId,
+		StakePoolID:       poolID,
 		GenesisFile:       shelleyGenesisFile,
 		TimeZone:          timeZone,
 	}

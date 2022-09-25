@@ -7,10 +7,6 @@ ifeq (, $(shell which revive))
 	@echo "== cannot find revive installing"
 	go install github.com/mgechev/revive@latest
 endif
-ifeq (, $(shell which fieldalignment))
-	@echo "== cannot find fieldalignment installing"
-	go install golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment
-endif
 
 build:
 	CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o ccli-tz main.go
@@ -18,7 +14,6 @@ build:
 generate-mocks:
 	mockgen -source=pkg/config/config.go -destination=pkg/config/mocks/config.go
 	mockgen -source=pkg/leader/leader.go -destination=pkg/leader/mocks/leader.go
-	mockgen -destination=pkg/leader/mocks/api.go github.com/prometheus/client_golang/api/prometheus/v1 API
 
 check-style: dependencies fmt vet lint
 
@@ -36,7 +31,6 @@ endif
 
 vet:
 	go vet $(pkgs)
-	go vet -vettool=$(which fieldalignment) $(pkgs)
 
 lint:
 	revive -config revive_conf.toml $(pkgs)

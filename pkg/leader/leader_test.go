@@ -49,7 +49,6 @@ var _ = Describe("CreateAndRun", func() {
 			shelleyGenesisFile := "shelley-genesis.json"
 			poolID := "5be57ce6d1225697f4ad4090355f0a72d6e1e2446d1d768f36aa118c"
 			vrfKeysFile := "vrf.skey"
-			dryRun := false
 			timeZone := "America/New_York"
 			cfg := &config.CfgYaml{
 				VRFSigningKeyFile: vrfKeysFile,
@@ -58,10 +57,11 @@ var _ = Describe("CreateAndRun", func() {
 				TimeZone:          timeZone,
 			}
 			testnetMagic := ""
-			mockCommandRunner.EXPECT().GetSchedule(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic, dryRun).Return(rawSlotOutput, nil)
+			trimmedArgs := CalculateArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic)
+			mockCommandRunner.EXPECT().GetSchedule(trimmedArgs).Return(rawSlotOutput, nil)
 			args := []string{"current"}
 
-			err := CreateAndRun(args, testnetMagic, mockCommandRunner, dryRun, cfg)
+			err := CreateAndRun(args, testnetMagic, mockCommandRunner, cfg)
 			Expect(err).ToNot(HaveOccurred())
 		})
 		It("should not error when called with valid arguments and dry run", func() {
@@ -69,7 +69,6 @@ var _ = Describe("CreateAndRun", func() {
 			shelleyGenesisFile := "shelley-genesis.json"
 			poolID := "5be57ce6d1225697f4ad4090355f0a72d6e1e2446d1d768f36aa118c"
 			vrfKeysFile := "vrf.skey"
-			dryRun := true
 			timeZone := "America/New_York"
 			cfg := &config.CfgYaml{
 				VRFSigningKeyFile: vrfKeysFile,
@@ -78,10 +77,11 @@ var _ = Describe("CreateAndRun", func() {
 				TimeZone:          timeZone,
 			}
 			testnetMagic := ""
-			mockCommandRunner.EXPECT().GetSchedule(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic, dryRun).Return(rawSlotOutput, nil)
+			trimmedArgs := CalculateArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic)
+			mockCommandRunner.EXPECT().GetSchedule(trimmedArgs).Return(rawSlotOutput, nil)
 			args := []string{"current"}
 
-			err := CreateAndRun(args, testnetMagic, mockCommandRunner, dryRun, cfg)
+			err := CreateAndRun(args, testnetMagic, mockCommandRunner, cfg)
 			Expect(err).ToNot(HaveOccurred())
 		})
 		It("should error when GetSchedule returns error", func() {
@@ -89,7 +89,6 @@ var _ = Describe("CreateAndRun", func() {
 			shelleyGenesisFile := "shelley-genesis.json"
 			poolID := "5be57ce6d1225697f4ad4090355f0a72d6e1e2446d1d768f36aa118c"
 			vrfKeysFile := "vrf.skey"
-			dryRun := false
 			timeZone := "America/New_York"
 			cfg := &config.CfgYaml{
 				VRFSigningKeyFile: vrfKeysFile,
@@ -98,31 +97,12 @@ var _ = Describe("CreateAndRun", func() {
 				TimeZone:          timeZone,
 			}
 			testnetMagic := ""
-			mockCommandRunner.EXPECT().GetSchedule(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic, dryRun).Return("", errors.New("waah"))
+			trimmedArgs := CalculateArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic)
+			mockCommandRunner.EXPECT().GetSchedule(trimmedArgs).Return("", errors.New("waah"))
 			args := []string{"current"}
 
-			err := CreateAndRun(args, testnetMagic, mockCommandRunner, dryRun, cfg)
+			err := CreateAndRun(args, testnetMagic, mockCommandRunner, cfg)
 			Expect(err).To(HaveOccurred())
-		})
-		It("should not error when GetSchedule returns error and dry run", func() {
-			period := "--current"
-			shelleyGenesisFile := "shelley-genesis.json"
-			poolID := "5be57ce6d1225697f4ad4090355f0a72d6e1e2446d1d768f36aa118c"
-			vrfKeysFile := "vrf.skey"
-			dryRun := true
-			timeZone := "America/New_York"
-			cfg := &config.CfgYaml{
-				VRFSigningKeyFile: vrfKeysFile,
-				StakePoolID:       poolID,
-				GenesisFile:       shelleyGenesisFile,
-				TimeZone:          timeZone,
-			}
-			testnetMagic := ""
-			mockCommandRunner.EXPECT().GetSchedule(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic, dryRun).Return("", errors.New("waah"))
-			args := []string{"current"}
-
-			err := CreateAndRun(args, testnetMagic, mockCommandRunner, dryRun, cfg)
-			Expect(err).ToNot(HaveOccurred())
 		})
 	})
 	Context("CalcTZSchedule", func() {
@@ -131,12 +111,12 @@ var _ = Describe("CreateAndRun", func() {
 			shelleyGenesisFile := "shelley-genesis.json"
 			poolID := "5be57ce6d1225697f4ad4090355f0a72d6e1e2446d1d768f36aa118c"
 			vrfKeysFile := "vrf.skey"
-			dryRun := false
 			timeZone := "America/Guatemala"
 			testnetMagic := ""
-			mockCommandRunner.EXPECT().GetSchedule(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic, dryRun).Return(rawSlotOutput, nil)
+			trimmedArgs := CalculateArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic)
+			mockCommandRunner.EXPECT().GetSchedule(trimmedArgs).Return(rawSlotOutput, nil)
 
-			schedule, err := CalcTZSchedule(timeZone, period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic, mockCommandRunner, dryRun)
+			schedule, err := CalcTZSchedule(timeZone, trimmedArgs, mockCommandRunner)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(len(schedule)).To(Equal(11))
 			row1 := ScheduleRow{

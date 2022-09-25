@@ -1,17 +1,23 @@
 package leader
 
 import (
-	log "github.com/sirupsen/logrus"
 	"os/exec"
 )
 
 type CmdRunner struct {
+	DryRun bool
 }
 
-func (r CmdRunner) GetSchedule(period, shelleyGenesisFile, poolId, vrfKeysFile, testnetMagic string, dryRun bool) (string, error) {
+func (CmdRunner) GetSchedule(trimmedArgs []string) (string, error) {
+	aCmd := exec.Command("cardano-cli", trimmedArgs...)
+	stdout, err := aCmd.CombinedOutput()
+	return string(stdout), err
+}
+
+func CalculateArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic string) []string {
 	trimmedArgs := []string{"query", "leadership-schedule",
 		"--vrf-signing-key-file", vrfKeysFile,
-		"--stake-pool-id", poolId,
+		"--stake-pool-id", poolID,
 		"--genesis", shelleyGenesisFile,
 		period,
 	}
@@ -20,11 +26,5 @@ func (r CmdRunner) GetSchedule(period, shelleyGenesisFile, poolId, vrfKeysFile, 
 	} else {
 		trimmedArgs = append(trimmedArgs, "--mainnet", testnetMagic)
 	}
-	if dryRun {
-		log.Infof("dry-run, would have executed:\n\ncardano-cli %v", trimmedArgs)
-		return "", nil
-	}
-	aCmd := exec.Command("cardano-cli", trimmedArgs...)
-	stdout, err := aCmd.CombinedOutput()
-	return string(stdout), err
+	return trimmedArgs
 }

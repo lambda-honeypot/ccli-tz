@@ -19,6 +19,9 @@ enableAllRules = true
     Disabled = true
 [rule.package-comments]
     Disabled = true
+[rule.unhandled-error]
+    Disabled = true
+
 
 # Rule tuning
 [rule.argument-limit]

@@ -19,9 +19,9 @@ var rootCmd = &cobra.Command{
 	Short: "Wrapper around the cardano-cli leadership schedule with timezone conversion",
 	Long: `Wraps around the cardano-cli query leadership-schedule and allows for timezone conversion of dates. For example:
 
-ccli-tz --timezone europe/london next
+ccli-tz next
 
-This will create the leadership-schedule for the pool and keys within the config file for the next epoch.`,
+This will create the leadership-schedule for the pool and timezone referenced within the config file for the next epoch.`,
 	Args: cobra.ExactArgs(1),
 	// Uncomment the following line if your bare application
 	// has an action associated with it:

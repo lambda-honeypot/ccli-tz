@@ -36,7 +36,8 @@ func CreateAndRun(args []string, testnetMagic string, cmdRunner CommandRunner, c
 	if err != nil {
 		return err
 	}
-	PrintSchedule(schedule)
+	output := ScheduleOutputString(schedule, args[0])
+	fmt.Println(output)
 	return nil
 }
 
@@ -49,13 +50,16 @@ func LogOutParams(args []string, testnetMagic string, cfg *config.CfgYaml) {
 	log.Infof("dry-run, would have executed:\n\ncardano-cli %v", trimmedArgs)
 }
 
-func PrintSchedule(schedule []ScheduleRow) {
+func ScheduleOutputString(schedule []ScheduleRow, period string) string {
+	if len(schedule) == 0 {
+		return fmt.Sprintf("No schedule blocks for %s epoch", period)
+	}
 	b, err := json.MarshalIndent(schedule, "", "  ")
 	if err != nil {
 		fmt.Println(err)
-		return
+		return ""
 	}
-	fmt.Println(string(b))
+	return string(b)
 }
 
 func CalcTZSchedule(timeZone string, trimmedArgs []string, runner CommandRunner) ([]ScheduleRow, error) {

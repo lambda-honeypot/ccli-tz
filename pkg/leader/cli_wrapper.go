@@ -24,7 +24,7 @@ func CalculateArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic
 	if testnetMagic != "" {
 		trimmedArgs = append(trimmedArgs, "--testnet-magic", testnetMagic)
 	} else {
-		trimmedArgs = append(trimmedArgs, "--mainnet", testnetMagic)
+		trimmedArgs = append(trimmedArgs, "--mainnet")
 	}
 	return trimmedArgs
 }

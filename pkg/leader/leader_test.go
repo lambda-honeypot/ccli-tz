@@ -25,6 +25,9 @@ const rawSlotOutput = `     SlotNo                          UTC Time
      71425763                   2022-09-12 14:14:14 UTC
 `
 
+const emptySlotOutput = `SlotNo                          UTC Time
+-------------------------------------------------------------`
+
 func TestLeader(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Leader Suite")
@@ -106,7 +109,7 @@ var _ = Describe("CreateAndRun", func() {
 		})
 	})
 	Context("CalcTZSchedule", func() {
-		It("should attempt to create expected config file", func() {
+		It("should calculate the correct rows with sample cardano rows", func() {
 			period := "--current"
 			shelleyGenesisFile := "shelley-genesis.json"
 			poolID := "5be57ce6d1225697f4ad4090355f0a72d6e1e2446d1d768f36aa118c"
@@ -137,6 +140,72 @@ var _ = Describe("CreateAndRun", func() {
 				ScheduledTime: "2022-09-12 08:14:14 CST",
 			}
 			Expect(schedule[10]).To(Equal(row11))
+		})
+		It("should calculate the correct rows with sample cardano empty rows output", func() {
+			period := "--current"
+			shelleyGenesisFile := "shelley-genesis.json"
+			poolID := "5be57ce6d1225697f4ad4090355f0a72d6e1e2446d1d768f36aa118c"
+			vrfKeysFile := "vrf.skey"
+			timeZone := "America/Guatemala"
+			testnetMagic := ""
+			trimmedArgs := CalculateArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic)
+			mockCommandRunner.EXPECT().GetSchedule(trimmedArgs).Return(emptySlotOutput, nil)
+
+			schedule, err := CalcTZSchedule(timeZone, trimmedArgs, mockCommandRunner)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(len(schedule)).To(Equal(0))
+		})
+	})
+	Context("ScheduleOutputString", func() {
+		It("should generate correct output string when there are rows", func() {
+			row1 := ScheduleRow{
+				BlockCount:    1,
+				SlotNumber:    71029049,
+				ScheduledTime: "2022-09-07 18:02:20 CST",
+			}
+			row2 := ScheduleRow{
+				BlockCount:    2,
+				SlotNumber:    71226203,
+				ScheduledTime: "2022-09-10 00:48:14 CST",
+			}
+			row3 := ScheduleRow{
+				BlockCount:    3,
+				SlotNumber:    71425763,
+				ScheduledTime: "2022-09-12 08:14:14 CST",
+			}
+			period := "next"
+			schedule := []ScheduleRow{row1, row2, row3}
+			outputString := ScheduleOutputString(schedule, period)
+			expectedOutput := `[
+  {
+    "BlockCount": 1,
+    "SlotNumber": 71029049,
+    "ScheduledTime": "2022-09-07 18:02:20 CST"
+  },
+  {
+    "BlockCount": 2,
+    "SlotNumber": 71226203,
+    "ScheduledTime": "2022-09-10 00:48:14 CST"
+  },
+  {
+    "BlockCount": 3,
+    "SlotNumber": 71425763,
+    "ScheduledTime": "2022-09-12 08:14:14 CST"
+  }
+]`
+			Expect(outputString).To(Equal(expectedOutput))
+		})
+		It("should generate correct output string when there are no rows for current", func() {
+			period := "current"
+			var schedule []ScheduleRow
+			outputString := ScheduleOutputString(schedule, period)
+			Expect(outputString).To(Equal("No schedule blocks for current epoch"))
+		})
+		It("should generate correct output string when there are no rows for next", func() {
+			period := "next"
+			var schedule []ScheduleRow
+			outputString := ScheduleOutputString(schedule, period)
+			Expect(outputString).To(Equal("No schedule blocks for next epoch"))
 		})
 	})
 })

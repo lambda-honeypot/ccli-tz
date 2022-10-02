@@ -34,19 +34,19 @@ func (m *MockCommandRunner) EXPECT() *MockCommandRunnerMockRecorder {
 	return m.recorder
 }
 
-// GetSchedule mocks base method.
-func (m *MockCommandRunner) GetSchedule(trimmedArgs []string) (string, error) {
+// RunCardanoCmd mocks base method.
+func (m *MockCommandRunner) RunCardanoCmd(trimmedArgs []string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSchedule", trimmedArgs)
+	ret := m.ctrl.Call(m, "RunCardanoCmd", trimmedArgs)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetSchedule indicates an expected call of GetSchedule.
-func (mr *MockCommandRunnerMockRecorder) GetSchedule(trimmedArgs interface{}) *gomock.Call {
+// RunCardanoCmd indicates an expected call of RunCardanoCmd.
+func (mr *MockCommandRunnerMockRecorder) RunCardanoCmd(trimmedArgs interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSchedule", reflect.TypeOf((*MockCommandRunner)(nil).GetSchedule), trimmedArgs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunCardanoCmd", reflect.TypeOf((*MockCommandRunner)(nil).RunCardanoCmd), trimmedArgs)
 }
 
 // MockConfigGetter is a mock of ConfigGetter interface.

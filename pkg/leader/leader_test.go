@@ -60,8 +60,10 @@ var _ = Describe("CreateAndRun", func() {
 				TimeZone:          timeZone,
 			}
 			testnetMagic := ""
-			trimmedArgs := CalculateArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic)
-			mockCommandRunner.EXPECT().GetSchedule(trimmedArgs).Return(rawSlotOutput, nil)
+			tipArgs := []string{"query", "tip", "--mainnet"}
+			mockCommandRunner.EXPECT().RunCardanoCmd(tipArgs).Return(sampleTip, nil)
+			trimmedArgs := CalculateLeaderArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic)
+			mockCommandRunner.EXPECT().RunCardanoCmd(trimmedArgs).Return(rawSlotOutput, nil)
 			args := []string{"current"}
 
 			err := CreateAndRun(args, testnetMagic, mockCommandRunner, cfg)
@@ -80,14 +82,16 @@ var _ = Describe("CreateAndRun", func() {
 				TimeZone:          timeZone,
 			}
 			testnetMagic := ""
-			trimmedArgs := CalculateArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic)
-			mockCommandRunner.EXPECT().GetSchedule(trimmedArgs).Return(rawSlotOutput, nil)
+			tipArgs := []string{"query", "tip", "--mainnet"}
+			mockCommandRunner.EXPECT().RunCardanoCmd(tipArgs).Return(sampleTip, nil)
+			trimmedArgs := CalculateLeaderArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic)
+			mockCommandRunner.EXPECT().RunCardanoCmd(trimmedArgs).Return(rawSlotOutput, nil)
 			args := []string{"current"}
 
 			err := CreateAndRun(args, testnetMagic, mockCommandRunner, cfg)
 			Expect(err).ToNot(HaveOccurred())
 		})
-		It("should error when GetSchedule returns error", func() {
+		It("should error when RunCardanoCmd returns error", func() {
 			period := "--current"
 			shelleyGenesisFile := "shelley-genesis.json"
 			poolID := "5be57ce6d1225697f4ad4090355f0a72d6e1e2446d1d768f36aa118c"
@@ -100,12 +104,34 @@ var _ = Describe("CreateAndRun", func() {
 				TimeZone:          timeZone,
 			}
 			testnetMagic := ""
-			trimmedArgs := CalculateArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic)
-			mockCommandRunner.EXPECT().GetSchedule(trimmedArgs).Return("", errors.New("waah"))
+			tipArgs := []string{"query", "tip", "--mainnet"}
+			mockCommandRunner.EXPECT().RunCardanoCmd(tipArgs).Return(sampleTip, nil)
+			trimmedArgs := CalculateLeaderArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic)
+			mockCommandRunner.EXPECT().RunCardanoCmd(trimmedArgs).Return("", errors.New("waah"))
 			args := []string{"current"}
 
 			err := CreateAndRun(args, testnetMagic, mockCommandRunner, cfg)
 			Expect(err).To(HaveOccurred())
+		})
+		It("should error when node is not synchronised", func() {
+			shelleyGenesisFile := "shelley-genesis.json"
+			poolID := "5be57ce6d1225697f4ad4090355f0a72d6e1e2446d1d768f36aa118c"
+			vrfKeysFile := "vrf.skey"
+			timeZone := "America/New_York"
+			cfg := &config.CfgYaml{
+				VRFSigningKeyFile: vrfKeysFile,
+				StakePoolID:       poolID,
+				GenesisFile:       shelleyGenesisFile,
+				TimeZone:          timeZone,
+			}
+			testnetMagic := ""
+			tipArgs := []string{"query", "tip", "--mainnet"}
+			mockCommandRunner.EXPECT().RunCardanoCmd(tipArgs).Return(unsyncTip, nil)
+			args := []string{"current"}
+
+			err := CreateAndRun(args, testnetMagic, mockCommandRunner, cfg)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError("tip not sync'd - please wait until 100.00. Current 78.00"))
 		})
 	})
 	Context("CalcTZSchedule", func() {
@@ -116,8 +142,8 @@ var _ = Describe("CreateAndRun", func() {
 			vrfKeysFile := "vrf.skey"
 			timeZone := "America/Guatemala"
 			testnetMagic := ""
-			trimmedArgs := CalculateArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic)
-			mockCommandRunner.EXPECT().GetSchedule(trimmedArgs).Return(rawSlotOutput, nil)
+			trimmedArgs := CalculateLeaderArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic)
+			mockCommandRunner.EXPECT().RunCardanoCmd(trimmedArgs).Return(rawSlotOutput, nil)
 
 			schedule, err := CalcTZSchedule(timeZone, trimmedArgs, mockCommandRunner)
 			Expect(err).ToNot(HaveOccurred())
@@ -148,15 +174,15 @@ var _ = Describe("CreateAndRun", func() {
 			vrfKeysFile := "vrf.skey"
 			timeZone := "America/Guatemala"
 			testnetMagic := ""
-			trimmedArgs := CalculateArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic)
-			mockCommandRunner.EXPECT().GetSchedule(trimmedArgs).Return(emptySlotOutput, nil)
+			trimmedArgs := CalculateLeaderArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic)
+			mockCommandRunner.EXPECT().RunCardanoCmd(trimmedArgs).Return(emptySlotOutput, nil)
 
 			schedule, err := CalcTZSchedule(timeZone, trimmedArgs, mockCommandRunner)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(len(schedule)).To(Equal(0))
 		})
 	})
-	Context("ScheduleOutputString", func() {
+	Context("GenerateScheduleOutput", func() {
 		It("should generate correct output string when there are rows", func() {
 			row1 := ScheduleRow{
 				BlockCount:    1,
@@ -175,7 +201,7 @@ var _ = Describe("CreateAndRun", func() {
 			}
 			period := "next"
 			schedule := []ScheduleRow{row1, row2, row3}
-			outputString := ScheduleOutputString(schedule, period)
+			outputString := GenerateScheduleOutput(schedule, period)
 			expectedOutput := `[
   {
     "BlockCount": 1,
@@ -198,13 +224,13 @@ var _ = Describe("CreateAndRun", func() {
 		It("should generate correct output string when there are no rows for current", func() {
 			period := "current"
 			var schedule []ScheduleRow
-			outputString := ScheduleOutputString(schedule, period)
+			outputString := GenerateScheduleOutput(schedule, period)
 			Expect(outputString).To(Equal("No schedule blocks for current epoch"))
 		})
 		It("should generate correct output string when there are no rows for next", func() {
 			period := "next"
 			var schedule []ScheduleRow
-			outputString := ScheduleOutputString(schedule, period)
+			outputString := GenerateScheduleOutput(schedule, period)
 			Expect(outputString).To(Equal("No schedule blocks for next epoch"))
 		})
 	})

@@ -11,7 +11,7 @@ import (
 )
 
 type CommandRunner interface {
-	GetSchedule(trimmedArgs []string) (string, error)
+	RunCardanoCmd(trimmedArgs []string) (string, error)
 }
 
 type ScheduleRow struct {
@@ -31,12 +31,25 @@ func CreateAndRun(args []string, testnetMagic string, cmdRunner CommandRunner, c
 	poolID := cfg.StakePoolID
 	timeZone := cfg.TimeZone
 	fmt.Println(fmt.Sprintf("Calculating for pool: %s", poolID))
-	trimmedArgs := CalculateArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic)
-	schedule, err := CalcTZSchedule(timeZone, trimmedArgs, cmdRunner)
+
+	tipData, err := GetTipData(testnetMagic, cmdRunner)
 	if err != nil {
 		return err
 	}
-	output := ScheduleOutputString(schedule, args[0])
+	if tipData.SyncProgress != "100.00" {
+		return fmt.Errorf("tip not sync'd - please wait until 100.00. Current %s", tipData.SyncProgress)
+	}
+	epoch := tipData.Epoch
+	if args[0] == "next" {
+		epoch++
+	}
+	fmt.Println(fmt.Sprintf("Calculating for epoch: %d", epoch))
+	leaderArgs := CalculateLeaderArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic)
+	schedule, err := CalcTZSchedule(timeZone, leaderArgs, cmdRunner)
+	if err != nil {
+		return err
+	}
+	output := GenerateScheduleOutput(schedule, args[0])
 	fmt.Println(output)
 	return nil
 }
@@ -46,11 +59,11 @@ func LogOutParams(args []string, testnetMagic string, cfg *config.CfgYaml) {
 	shelleyGenesisFile := cfg.GenesisFile
 	vrfKeysFile := cfg.VRFSigningKeyFile
 	poolID := cfg.StakePoolID
-	trimmedArgs := CalculateArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic)
+	trimmedArgs := CalculateLeaderArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic)
 	log.Infof("dry-run, would have executed:\n\ncardano-cli %v", trimmedArgs)
 }
 
-func ScheduleOutputString(schedule []ScheduleRow, period string) string {
+func GenerateScheduleOutput(schedule []ScheduleRow, period string) string {
 	if len(schedule) == 0 {
 		return fmt.Sprintf("No schedule blocks for %s epoch", period)
 	}
@@ -64,8 +77,7 @@ func ScheduleOutputString(schedule []ScheduleRow, period string) string {
 
 func CalcTZSchedule(timeZone string, trimmedArgs []string, runner CommandRunner) ([]ScheduleRow, error) {
 	var rows []ScheduleRow
-	//trimmedArgs := CalculateArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic)
-	rawSchedule, err := runner.GetSchedule(trimmedArgs)
+	rawSchedule, err := runner.RunCardanoCmd(trimmedArgs)
 	if err != nil {
 		log.Errorf("failed to run leader log with: %s", rawSchedule)
 		return rows, err

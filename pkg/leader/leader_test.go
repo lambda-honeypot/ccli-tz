@@ -4,7 +4,8 @@ import (
 	"errors"
 	"github.com/golang/mock/gomock"
 	"github.com/lambda-honeypot/ccli-tz/pkg/config"
-	mocks "github.com/lambda-honeypot/ccli-tz/pkg/leader/mocks"
+	mockcmd "github.com/lambda-honeypot/ccli-tz/pkg/leader/mocks"
+	mockfiles "github.com/lambda-honeypot/ccli-tz/pkg/utils/mocks"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"testing"
@@ -25,6 +26,12 @@ const rawSlotOutput = `     SlotNo                          UTC Time
      71425763                   2022-09-12 14:14:14 UTC
 `
 
+const rawSimpleSlotOutput = `     SlotNo                          UTC Time              
+-------------------------------------------------------------
+     71029049                   2022-09-08 00:02:20 UTC
+     71425763                   2022-09-12 14:14:14 UTC
+`
+
 const emptySlotOutput = `SlotNo                          UTC Time
 -------------------------------------------------------------`
 
@@ -36,12 +43,14 @@ func TestLeader(t *testing.T) {
 var _ = Describe("CreateAndRun", func() {
 	var (
 		ctrl              *gomock.Controller
-		mockCommandRunner *mocks.MockCommandRunner
+		mockCommandRunner *mockcmd.MockCommandRunner
+		mockFileUtils     *mockfiles.MockFileUtilsInterface
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
-		mockCommandRunner = mocks.NewMockCommandRunner(ctrl)
+		mockCommandRunner = mockcmd.NewMockCommandRunner(ctrl)
+		mockFileUtils = mockfiles.NewMockFileUtilsInterface(ctrl)
 	})
 	AfterEach(func() {
 		ctrl.Finish()
@@ -64,9 +73,9 @@ var _ = Describe("CreateAndRun", func() {
 			mockCommandRunner.EXPECT().RunCardanoCmd(tipArgs).Return(sampleTip, nil)
 			trimmedArgs := CalculateLeaderArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic)
 			mockCommandRunner.EXPECT().RunCardanoCmd(trimmedArgs).Return(rawSlotOutput, nil)
-			args := []string{"current"}
+			periodShort := "current"
 
-			err := CreateAndRun(args, testnetMagic, mockCommandRunner, cfg)
+			err := CreateAndRun(periodShort, testnetMagic, mockCommandRunner, cfg, mockFileUtils)
 			Expect(err).ToNot(HaveOccurred())
 		})
 		It("should not error when called with valid arguments and dry run", func() {
@@ -86,9 +95,51 @@ var _ = Describe("CreateAndRun", func() {
 			mockCommandRunner.EXPECT().RunCardanoCmd(tipArgs).Return(sampleTip, nil)
 			trimmedArgs := CalculateLeaderArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic)
 			mockCommandRunner.EXPECT().RunCardanoCmd(trimmedArgs).Return(rawSlotOutput, nil)
-			args := []string{"current"}
+			periodShort := "current"
 
-			err := CreateAndRun(args, testnetMagic, mockCommandRunner, cfg)
+			err := CreateAndRun(periodShort, testnetMagic, mockCommandRunner, cfg, mockFileUtils)
+			Expect(err).ToNot(HaveOccurred())
+		})
+		It("should not error when called with valid arguments and persistMode", func() {
+			period := "--current"
+			shelleyGenesisFile := "shelley-genesis.json"
+			poolID := "5be57ce6d1225697f4ad4090355f0a72d6e1e2446d1d768f36aa118c"
+			vrfKeysFile := "vrf.skey"
+			timeZone := "America/New_York"
+			cfg := &config.CfgYaml{
+				VRFSigningKeyFile: vrfKeysFile,
+				StakePoolID:       poolID,
+				GenesisFile:       shelleyGenesisFile,
+				TimeZone:          timeZone,
+				PersistMode:       true,
+			}
+			testnetMagic := ""
+			tipArgs := []string{"query", "tip", "--mainnet"}
+			mockCommandRunner.EXPECT().RunCardanoCmd(tipArgs).Return(sampleTip, nil)
+			trimmedArgs := CalculateLeaderArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic)
+			mockCommandRunner.EXPECT().RunCardanoCmd(trimmedArgs).Return(rawSimpleSlotOutput, nil)
+			expectedOutput := `{
+  "epoch": 365,
+  "poolID": "5be57ce6d1225697f4ad4090355f0a72d6e1e2446d1d768f36aa118c",
+  "schedule": [
+    {
+      "BlockCount": 1,
+      "SlotNumber": 71029049,
+      "ScheduledTime": "2022-09-07 20:02:20 EDT"
+    },
+    {
+      "BlockCount": 2,
+      "SlotNumber": 71425763,
+      "ScheduledTime": "2022-09-12 10:14:14 EDT"
+    }
+  ]
+}`
+			mockFileUtils.EXPECT().UserHomeDir().Return("/home/user/", nil)
+			mockFileUtils.EXPECT().MkDir("/home/user/.ccli-files").Return(nil)
+			mockFileUtils.EXPECT().WriteFile("/home/user/.ccli-files/365.json", []byte(expectedOutput)).Return(nil)
+			periodShort := "current"
+
+			err := CreateAndRun(periodShort, testnetMagic, mockCommandRunner, cfg, mockFileUtils)
 			Expect(err).ToNot(HaveOccurred())
 		})
 		It("should error when RunCardanoCmd returns error", func() {
@@ -108,9 +159,9 @@ var _ = Describe("CreateAndRun", func() {
 			mockCommandRunner.EXPECT().RunCardanoCmd(tipArgs).Return(sampleTip, nil)
 			trimmedArgs := CalculateLeaderArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic)
 			mockCommandRunner.EXPECT().RunCardanoCmd(trimmedArgs).Return("", errors.New("waah"))
-			args := []string{"current"}
+			periodShort := "current"
 
-			err := CreateAndRun(args, testnetMagic, mockCommandRunner, cfg)
+			err := CreateAndRun(periodShort, testnetMagic, mockCommandRunner, cfg, mockFileUtils)
 			Expect(err).To(HaveOccurred())
 		})
 		It("should error when node is not synchronised", func() {
@@ -127,9 +178,9 @@ var _ = Describe("CreateAndRun", func() {
 			testnetMagic := ""
 			tipArgs := []string{"query", "tip", "--mainnet"}
 			mockCommandRunner.EXPECT().RunCardanoCmd(tipArgs).Return(unsyncTip, nil)
-			args := []string{"current"}
+			periodShort := "current"
 
-			err := CreateAndRun(args, testnetMagic, mockCommandRunner, cfg)
+			err := CreateAndRun(periodShort, testnetMagic, mockCommandRunner, cfg, mockFileUtils)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError("tip not sync'd - please wait until 100.00. Current 78.00"))
 		})
@@ -200,38 +251,63 @@ var _ = Describe("CreateAndRun", func() {
 				ScheduledTime: "2022-09-12 08:14:14 CST",
 			}
 			period := "next"
+			poolID := "5be57ce6d1225697f4ad4090355f0a72d6e1e2446d1d768f36aa118c"
+			epoch := 299
 			schedule := []ScheduleRow{row1, row2, row3}
-			outputString := GenerateScheduleOutput(schedule, period)
-			expectedOutput := `[
-  {
-    "BlockCount": 1,
-    "SlotNumber": 71029049,
-    "ScheduledTime": "2022-09-07 18:02:20 CST"
-  },
-  {
-    "BlockCount": 2,
-    "SlotNumber": 71226203,
-    "ScheduledTime": "2022-09-10 00:48:14 CST"
-  },
-  {
-    "BlockCount": 3,
-    "SlotNumber": 71425763,
-    "ScheduledTime": "2022-09-12 08:14:14 CST"
-  }
-]`
-			Expect(outputString).To(Equal(expectedOutput))
+			outputJSON := OutputJSON{
+				Schedule: schedule,
+				Epoch:    epoch,
+				PoolID:   poolID,
+			}
+			outputString := GenerateScheduleOutput(outputJSON, period)
+			expectedOutput := `{
+  "epoch": 299,
+  "poolID": "5be57ce6d1225697f4ad4090355f0a72d6e1e2446d1d768f36aa118c",
+  "schedule": [
+    {
+      "BlockCount": 1,
+      "SlotNumber": 71029049,
+      "ScheduledTime": "2022-09-07 18:02:20 CST"
+    },
+    {
+      "BlockCount": 2,
+      "SlotNumber": 71226203,
+      "ScheduledTime": "2022-09-10 00:48:14 CST"
+    },
+    {
+      "BlockCount": 3,
+      "SlotNumber": 71425763,
+      "ScheduledTime": "2022-09-12 08:14:14 CST"
+    }
+  ]
+}`
+			Expect(string(outputString)).To(Equal(expectedOutput))
 		})
 		It("should generate correct output string when there are no rows for current", func() {
 			period := "current"
 			var schedule []ScheduleRow
-			outputString := GenerateScheduleOutput(schedule, period)
-			Expect(outputString).To(Equal("No schedule blocks for current epoch"))
+			poolID := "5be57ce6d1225697f4ad4090355f0a72d6e1e2446d1d768f36aa118c"
+			epoch := 299
+			outputJSON := OutputJSON{
+				Schedule: schedule,
+				Epoch:    epoch,
+				PoolID:   poolID,
+			}
+			outputString := GenerateScheduleOutput(outputJSON, period)
+			Expect(string(outputString)).To(Equal("No schedule blocks for current epoch"))
 		})
 		It("should generate correct output string when there are no rows for next", func() {
 			period := "next"
 			var schedule []ScheduleRow
-			outputString := GenerateScheduleOutput(schedule, period)
-			Expect(outputString).To(Equal("No schedule blocks for next epoch"))
+			poolID := "5be57ce6d1225697f4ad4090355f0a72d6e1e2446d1d768f36aa118c"
+			epoch := 299
+			outputJSON := OutputJSON{
+				Schedule: schedule,
+				Epoch:    epoch,
+				PoolID:   poolID,
+			}
+			outputString := GenerateScheduleOutput(outputJSON, period)
+			Expect(string(outputString)).To(Equal("No schedule blocks for next epoch"))
 		})
 	})
 })

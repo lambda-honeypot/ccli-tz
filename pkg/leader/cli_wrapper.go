@@ -9,7 +9,10 @@ type CmdRunner struct{}
 func (CmdRunner) RunCardanoCmd(trimmedArgs []string) (string, error) {
 	aCmd := exec.Command("cardano-cli", trimmedArgs...)
 	stdout, err := aCmd.CombinedOutput()
-	return string(stdout), err
+	if stdout != nil {
+		return string(stdout), err
+	}
+	return "", err
 }
 
 func CalculateLeaderArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic string) []string {

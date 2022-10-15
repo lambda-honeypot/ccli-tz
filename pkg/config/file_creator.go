@@ -30,10 +30,6 @@ func (FileConfigCreator) ConfigFileExists(filePath string) (bool, error) {
 }
 
 func (FileConfigCreator) WriteFile(filePath string, yamlData []byte) error {
-	f, err := os.Create(filePath)
-	if err != nil {
-		return err
-	}
-	_, err = f.Write(yamlData)
+	err := os.WriteFile(filePath, yamlData, 0666)
 	return err
 }

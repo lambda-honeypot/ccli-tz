@@ -13,6 +13,8 @@ const sampleString = `VRFSigningKeyFile: /path/to/vrf-signing-key-file/vrf.skey
 stakePoolID: <insert pool id>
 shelleyGenesisFile: /path/to/genesis-file/shelley-genesis.json
 timeZone: Europe/London
+serverPort: "9091"
+persistMode: true
 `
 
 func TestConfig(t *testing.T) {

@@ -21,6 +21,8 @@ type CfgYaml struct {
 	StakePoolID       string `yaml:"stakePoolID"`
 	GenesisFile       string `yaml:"shelleyGenesisFile"`
 	TimeZone          string `yaml:"timeZone"`
+	Port              string `yaml:"serverPort"`
+	PersistMode       bool   `yaml:"persistMode"`
 }
 
 func ReadConfig() *CfgYaml {
@@ -28,11 +30,13 @@ func ReadConfig() *CfgYaml {
 	vrfKeysFile := normaliseHomeDir(viper.GetString("VRFSigningKeyFile"))
 	poolID := viper.GetString("stakePoolID")
 	timeZone := viper.GetString("timeZone")
+	persistMode := viper.GetBool("persistMode")
 	return &CfgYaml{
 		VRFSigningKeyFile: vrfKeysFile,
 		StakePoolID:       poolID,
 		GenesisFile:       shelleyGenesisFile,
 		TimeZone:          timeZone,
+		PersistMode:       persistMode,
 	}
 }
 
@@ -55,6 +59,8 @@ func writeTemplateConfig(filePath string, creator CfgCreator) error {
 		StakePoolID:       "<insert pool id>",
 		GenesisFile:       "/path/to/genesis-file/shelley-genesis.json",
 		TimeZone:          "Europe/London",
+		Port:              "9091",
+		PersistMode:       true,
 	}
 
 	yamlData, err := yaml.Marshal(&cfgYml)

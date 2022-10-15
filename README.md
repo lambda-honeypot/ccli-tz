@@ -1,6 +1,6 @@
 ## ccli-tz
 
-A cardano-cli leadership-schedule wrapper with time zone adjust. Settings are controlled via config to simplify usage.  
+An automated cardano-cli leadership-schedule wrapper with time zone adjust. Settings are controlled via config to simplify usage.  
 
 ### Installation
 
@@ -36,9 +36,11 @@ VRFSigningKeyFile: /path/to/key/vrf.skey
 stakePoolID: 217e45e759ef5d132dd47d4b8535327d897134ee6803f6d1383a0b50
 shelleyGenesisFile: /path/to/configs/shelley-genesis.json
 timeZone: Europe/London
+persistMode: true # Determines whether to write the leaderlog schedule to file. Required for server mode.
+serverPort: 9091 # It is highly recommended to change this. Required for server mode.
 ```
 
-### Usage
+### Basic Usage
 
 Simple (defaults to mainnet):
 ```shell
@@ -54,3 +56,21 @@ Override config:
 ```shell
 $ ./ccli-tz current --testnet-magic 1 --config ~/other_path/.ccli-tz.yaml
 ```
+
+### Server Mode
+
+Runs the leaderlog in a server mode so that pre-calculated schedules can be accessed via http call. For example:
+
+```shell
+$ ccli-tz server --testnet-magic 1 --config ~/some/custom/config.yml
+```
+
+Will run a server that hosts the following endpoints:
+
+```shell
+curl localhost:8080/current # Displays the schedule for the current epoch
+curl localhost:8080/next # Displays the schedule for the next epoch
+```
+
+**WARNING: It is advised that you do not expose these endpoints externally to your block producing network!**
+

@@ -1,6 +1,10 @@
 package utils
 
-import "os"
+import (
+	log "github.com/sirupsen/logrus"
+	"os"
+	"strings"
+)
 
 type FileUtilsInterface interface {
 	WriteFile(path string, contents []byte) error
@@ -25,4 +29,16 @@ func (FileUtils) ReadFile(path string) ([]byte, error) {
 
 func (FileUtils) UserHomeDir() (string, error) {
 	return os.UserHomeDir()
+}
+
+func NormaliseHomeDir(file string) string {
+	if strings.HasPrefix(file, "~") {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			log.Errorf("failed to get userhome dir with: %v", err)
+			return file
+		}
+		return strings.Replace(file, "~", home, 1)
+	}
+	return file
 }

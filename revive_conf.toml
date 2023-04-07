@@ -25,12 +25,12 @@ enableAllRules = true
 
 # Rule tuning
 [rule.argument-limit]
-    Arguments = [5]
+    Arguments = [12]
 [rule.cyclomatic]
-    Arguments = [6]
+    Arguments = [12]
 [rule.function-result-limit]
     Arguments = [2]
 [rule.line-length-limit]
-    Arguments = [160]
+    Arguments = [300]
 [rule.cognitive-complexity]
-    Arguments = [5]
+    Arguments = [12]

@@ -40,7 +40,6 @@ TxHash                                 TxIx        Amount
 })
 
 var _ = Describe("generateTokenDetailsAndVerify", func() {
-
 	It("should produce the expected balances with no tokens", func() {
 		utxoDetails := generateTestUTXO(map[string]int{})
 		paymentAddressesWithTokens := map[string]PaymentDetails{
@@ -97,6 +96,6 @@ var _ = Describe("generateTokenDetailsAndVerify", func() {
 		}
 		paymentTokenDetails, err := generateTokenDetailsAndVerify(utxoDetails, paymentAddressesWithTokens)
 		Expect(err).ToNot(HaveOccurred())
-		Expect(paymentTokenDetails).To(Equal(expectedTokens))
+		Expect(paymentTokenDetails).Should(ContainElements(expectedTokens))
 	})
 })

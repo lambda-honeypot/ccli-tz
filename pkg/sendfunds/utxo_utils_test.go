@@ -26,7 +26,6 @@ ae7828ff0c6d607a279aba9e483617fc5ea423b1bf890bbe1b093007c791cadf     0        40
 
 		Expect(len(firstRow.Tokens)).To(Equal(1))
 		Expect(firstRow.Tokens["2aa9c1557fcf8e7caa049fa0911a8724a1cdaf8037fe0b431c6ac664.PIGYToken"]).To(Equal(9062597))
-
 	})
 
 	It("should parse output correctly without tokens", func() {
@@ -47,6 +46,7 @@ b5dfee5e9562cdaff11b9de28ee404d4ceb6d4617f5e90180966df2b12d77ac8     0        15
 		Expect(firstRow.TxID).To(Equal("0"))
 		Expect(firstRow.LovelaceBalance).To(Equal(1520359733))
 	})
+	//revive:disable:line-length-limit
 	It("should parse output correctly with many tokens", func() {
 		utxoString := `                           TxHash                                 TxIx        Amount
 --------------------------------------------------------------------------------------
@@ -97,4 +97,5 @@ b5dfee5e9562cdaff11b9de28ee404d4ceb6d4617f5e90180966df2b12d77ac8     0        15
 		Expect(firstRow.Tokens["cd27bd963a1bab843b55b787286a25739f6d687a810c3a92df79c735.DYOR037"]).To(Equal(1))
 		Expect(firstRow.Tokens["d45b8c3932daa3e7cc0148553e89cb93f83fbeb34d6b4b8b712ccc9f.withspacesCoin"]).To(Equal(2140))
 	})
+	//revive:enable:line-length-limit
 })

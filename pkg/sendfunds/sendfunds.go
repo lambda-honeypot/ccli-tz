@@ -35,7 +35,7 @@ func (fs *FundSender) RunSendFunds(startAddress, signingKeyFile string, paymentA
 	}
 	log.Infof("Lovelace Balance Before: %d", balance.ADABalance)
 	for idx, tokenBalance := range balance.TokenBalances {
-		log.Debugf("Token Balance Before: %s + %d", idx, tokenBalance)
+		log.Infof("Token Balance Before: %s + %d", idx, tokenBalance)
 	}
 	err = fs.payMultiple(startAddress, signingKeyFile, paymentAddressesWithTokens)
 	if err != nil {
@@ -45,7 +45,10 @@ func (fs *FundSender) RunSendFunds(startAddress, signingKeyFile string, paymentA
 	if err != nil {
 		return fmt.Errorf("failed to create UTXO from start address: %s with: %v", startAddress, err)
 	}
-	log.Infof("Lovelace Balance After: %+v\n", newBalance)
+	log.Infof("Lovelace Balance After: %+v\n", newBalance.ADABalance)
+	for idx, tokenBalance := range newBalance.TokenBalances {
+		log.Infof("Token Balance Before: %s + %d", idx, tokenBalance)
+	}
 	return nil
 }
 

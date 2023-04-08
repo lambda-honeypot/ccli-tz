@@ -1,9 +1,9 @@
 sourceAddress: "addr1q8q566cvhawynjmw008u5xlzkqaplx33vjhs82ec7f2vzt7m9dtqxjj5kv4u40r5ss7dsy679zcw9xkm07kasdg6u4hs3azrhh"
 targetAddresses:
   addr1q8a5gtz7qv8cccy5tymwwansn9m5zwm9kjkt55eqyukrm4fk9mk69u550yut4hhf5cyqu5nmh8jpw57lhxvhwqgx5sxqcydlqg:
-    lovelaceAmount: 1000000
+    lovelaceAmount: 1150770
   addr1qyl66psd5nrwpd85ddne2x5reg006sqyzfallkeeuenydkh0ays4l5jylz7v4cwvgrwnvqcthn4tjk4g6lcuw567js6sphzc2m:
-    lovelaceAmount: 1000000
+    lovelaceAmount: 1150770
     paymentTokens:
       - tokenID: 1815bee29d9d1eabf78b7f21f29ae55cbad8d06fa470a65ddbf98156.484f4e4559
         tokenAmount: 1

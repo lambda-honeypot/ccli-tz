@@ -12,16 +12,16 @@ import (
 
 // serverCmd represents the server command
 var sendFundCmd = &cobra.Command{
-	Use:   "sendfund",
-	Short: "Run the sendfund command",
-	Long: `Runs the sendfund in a server mode so that pre-calculated schedules can be accessed via http call. For example:
+	Use:   "sendfunds",
+	Short: "Run the sendfunds command",
+	Long: `Runs the sendfunds in a server mode so that pre-calculated schedules can be accessed via http call. For example:
 
 # SIGNING_KEY_FILE must be specified as an environment variable
 export SIGNING_KEY_FILE=/path/to/source/payment.skey 
-ccli-tz sendfund --payment-file ~/some/path/to/payment.yml --testnet-magic 1
+ccli-tz sendfunds --payment-file ~/some/path/to/payment.yml --testnet-magic 1
 
 # mainnet requires no flag
-SIGNING_KEY_FILE=/path/to/source/payment.skey ccli-tz sendfund --payment-file ~/some/path/to/payment.yml 
+SIGNING_KEY_FILE=/path/to/source/payment.skey ccli-tz sendfunds --payment-file ~/some/path/to/payment.yml 
 
 This will 
 `,

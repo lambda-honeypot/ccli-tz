@@ -97,6 +97,7 @@ func (fs *FundSender) getCurrentSlot() (int, error) {
 
 func (fs *FundSender) createUTXOFromAddress(tokenAddress string) (*FullUTXO, error) {
 	commandArgs := []string{"query", "utxo", "--address", tokenAddress, fs.network, fs.magic}
+	log.Debugf("calling cardano command with %v", commandArgs)
 	queryReturn, err := fs.runner.RunCardanoCmd(commandArgs)
 	if err != nil {
 		return nil, fmt.Errorf("stdin: %s stderr: %v", queryReturn, err)

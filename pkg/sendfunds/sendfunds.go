@@ -171,7 +171,7 @@ func (fs *FundSender) payMultiple(sourceAddress, signingKeyFile string, paymentD
 	}
 	paymentTokenDetails, err := generateTokenDetailsAndVerify(utxoDetails, paymentDetails)
 	if err != nil {
-		return fmt.Errorf("failed to generate token details with: \n%v", err)
+		return err
 	}
 	err = fs.createRawTxFile(utxoDetails, sourceAddress, tmpFile, paymentDetails, slot, 0, 0, []TokenDetails{})
 	if err != nil {
@@ -209,7 +209,7 @@ func generateTokenDetailsAndVerify(utxo *FullUTXO, paymentDetails map[string]Pay
 	minimumLovelace := 1150770
 	for paymentAddress, paymentDetail := range paymentDetails {
 		if paymentDetail.AdaAmount < minimumLovelace {
-			return nil, fmt.Errorf("individual send amount to: %s in lovelace is: %d - this is below the minimum allowed amount per address of %d", paymentAddress, paymentDetail.AdaAmount, minimumLovelace)
+			return nil, fmt.Errorf("individual send amount to: %s in lovelace is: %d - this is below the minimum allowed amount per address of %d lovelace", paymentAddress, paymentDetail.AdaAmount, minimumLovelace)
 		}
 		lovelaceSendTotal += paymentDetail.AdaAmount
 		for _, tokenDetail := range paymentDetail.PaymentTokens {

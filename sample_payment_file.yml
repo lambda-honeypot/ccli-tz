@@ -5,5 +5,5 @@ targetAddresses:
   addr1qyl66psd5nrwpd85ddne2x5reg006sqyzfallkeeuenydkh0ays4l5jylz7v4cwvgrwnvqcthn4tjk4g6lcuw567js6sphzc2m:
     lovelaceAmount: 1000000
     paymentTokens:
-      - tokenID: 1815bee29d9d1eabf78b7f21f29ae55cbad8d06fa470a65ddbf98156.HONEY
+      - tokenID: 1815bee29d9d1eabf78b7f21f29ae55cbad8d06fa470a65ddbf98156.1815bee2
         tokenAmount: 1

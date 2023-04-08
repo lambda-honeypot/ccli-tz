@@ -5,6 +5,7 @@ import (
 	"github.com/lambda-honeypot/ccli-tz/pkg/leader"
 	"github.com/lambda-honeypot/ccli-tz/pkg/sendfunds"
 	"github.com/lambda-honeypot/ccli-tz/pkg/utils"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -36,6 +37,7 @@ func init() {
 }
 
 func RunSendFunds(cmd *cobra.Command, _ []string) error {
+	setLogLevel()
 	runner := leader.CmdRunner{}
 	network := "--mainnet"
 	testnetMagic, err := cmd.Flags().GetString("testnet-magic")
@@ -61,4 +63,18 @@ func RunSendFunds(cmd *cobra.Command, _ []string) error {
 
 	fs := sendfunds.NewFundSender(runner, network, testnetMagic)
 	return fs.RunSendFunds(startAddress, signingKeyFile, paymentAddressesWithTokens)
+}
+
+func setLogLevel() {
+	level, err := rootCmd.PersistentFlags().GetString("log-level")
+	if err != nil {
+		log.Errorf("failed to get log-level with err: %v", err)
+		return
+	}
+	parseLevel, err := log.ParseLevel(level)
+	if err != nil {
+		log.Errorf("failed to set log-level: %s with err: %v", level, err)
+		return
+	}
+	log.SetLevel(parseLevel)
 }

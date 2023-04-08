@@ -5,7 +5,6 @@ import (
 	"github.com/lambda-honeypot/ccli-tz/pkg/config"
 	"github.com/lambda-honeypot/ccli-tz/pkg/leader"
 	"github.com/lambda-honeypot/ccli-tz/pkg/utils"
-	log "github.com/sirupsen/logrus"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -90,12 +89,17 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().Bool("dry-run", false, "If set to true will print the command and args passed to cardano-cli")
-	parseLevel, err := log.ParseLevel(logLevel)
-	if err != nil {
-		log.Errorf("failed to set log-level: %s", logLevel)
-		return
-	}
-	log.SetLevel(parseLevel)
+	//level, err := rootCmd.PersistentFlags().GetString("log-level")
+	//if err != nil {
+	//	log.Errorf("failed to get log-level with err: %v", err)
+	//	return
+	//}
+	//parseLevel, err := log.ParseLevel(level)
+	//if err != nil {
+	//	log.Errorf("failed to set log-level: %s with err: %v", level, err)
+	//	return
+	//}
+	//log.SetLevel(parseLevel)
 }
 
 // initConfig reads in config file and ENV variables if set.

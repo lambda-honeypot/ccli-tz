@@ -34,8 +34,9 @@ func (fs *FundSender) RunSendFunds(startAddress, signingKeyFile string, paymentA
 		return fmt.Errorf("failed to create UTXO from start address: %s with: %v", startAddress, err)
 	}
 	balanceOutputString := fmt.Sprintf("Lovelace Balance Before: %d\n", balance.ADABalance)
+	balanceOutputString += "Token Balances Before:\n"
 	for idx, tokenBalance := range balance.TokenBalances {
-		balanceOutputString += fmt.Sprintf("Token Balance Before: %s + %d\n", idx, tokenBalance)
+		balanceOutputString += fmt.Sprintf("  %s: %d\n", idx, tokenBalance)
 	}
 	log.Infof("%s", balanceOutputString)
 	err = fs.payMultiple(startAddress, signingKeyFile, paymentAddressesWithTokens)
@@ -47,8 +48,9 @@ func (fs *FundSender) RunSendFunds(startAddress, signingKeyFile string, paymentA
 		return fmt.Errorf("failed to create UTXO from start address: %s with: %v", startAddress, err)
 	}
 	newBalanceOutputString := fmt.Sprintf("Lovelace Balance After: %d\n", newBalance.ADABalance)
+	newBalanceOutputString += "Token Balances After:\n"
 	for idx, tokenBalance := range newBalance.TokenBalances {
-		newBalanceOutputString += fmt.Sprintf("Token Balance After: %s + %d\n", idx, tokenBalance)
+		newBalanceOutputString += fmt.Sprintf("  %s: %d\n", idx, tokenBalance)
 	}
 	log.Infof("%s", newBalanceOutputString)
 	return nil

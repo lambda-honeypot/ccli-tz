@@ -6,7 +6,13 @@ import (
 
 type CmdRunner struct{}
 
-func (CmdRunner) RunCardanoCmd(trimmedArgs []string) (string, error) {
+func (CmdRunner) RunCardanoCmd(args []string) (string, error) {
+	var trimmedArgs []string
+	for _, arg := range args {
+		if arg != "" {
+			trimmedArgs = append(trimmedArgs, arg)
+		}
+	}
 	aCmd := exec.Command("cardano-cli", trimmedArgs...)
 	stdout, err := aCmd.CombinedOutput()
 	if stdout != nil {

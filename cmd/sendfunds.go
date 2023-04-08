@@ -5,7 +5,6 @@ import (
 	"github.com/lambda-honeypot/ccli-tz/pkg/leader"
 	"github.com/lambda-honeypot/ccli-tz/pkg/sendfunds"
 	"github.com/lambda-honeypot/ccli-tz/pkg/utils"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -37,10 +36,12 @@ func init() {
 }
 
 func RunSendFunds(cmd *cobra.Command, _ []string) error {
-	log.SetLevel(log.DebugLevel)
 	runner := leader.CmdRunner{}
-	testnetMagic, err := cmd.Flags().GetString("testnet-magic")
 	network := "--mainnet"
+	testnetMagic, err := cmd.Flags().GetString("testnet-magic")
+	if err != nil {
+		return fmt.Errorf("failed to get --testnet-magic with: %v", err)
+	}
 	if testnetMagic != "" {
 		network = "--testnet-magic"
 	}

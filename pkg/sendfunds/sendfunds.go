@@ -42,12 +42,12 @@ func (fs *FundSender) RunSendFunds(startAddress, signingKeyFile string, paymentA
 	log.Infof("%s", balanceOutputString)
 	err = fs.payMultiple(startAddress, signingKeyFile, paymentAddressesWithTokens)
 	if err != nil {
-		log.Errorf("failed to pay multiple wallets with: %v", err)
+		log.Errorf("failed to pay multiple wallets with: \n%v", err)
 		return nil
 	}
 	newBalance, err := fs.createUTXOFromAddress(startAddress)
 	if err != nil {
-		log.Errorf("failed to create UTXO from start address: %s with: %v", startAddress, err)
+		log.Errorf("failed to create UTXO from start address: %s with: \n%v", startAddress, err)
 		return nil
 	}
 	newBalanceOutputString := fmt.Sprintf("Lovelace Balance After: %d\n", newBalance.ADABalance)
@@ -163,23 +163,23 @@ func (fs *FundSender) payMultiple(sourceAddress, signingKeyFile string, paymentD
 	slot, _ := fs.getCurrentSlot()
 	err = fs.createParamsFile(paramsFile)
 	if err != nil {
-		return fmt.Errorf("failed to create params file: %v", err)
+		return fmt.Errorf("failed to create params file: \n%v", err)
 	}
 	utxoDetails, err := fs.createUTXOFromAddress(sourceAddress)
 	if err != nil {
-		return fmt.Errorf("failed to create utxofrom address: %s with error: %v", sourceAddress, err)
+		return fmt.Errorf("failed to create utxofrom address: %s with error: \n%v", sourceAddress, err)
 	}
 	paymentTokenDetails, err := generateTokenDetailsAndVerify(utxoDetails, paymentDetails)
 	if err != nil {
-		return fmt.Errorf("failed to generate token details with: %v", err)
+		return fmt.Errorf("failed to generate token details with: \n%v", err)
 	}
 	err = fs.createRawTxFile(utxoDetails, sourceAddress, tmpFile, paymentDetails, slot, 0, 0, []TokenDetails{})
 	if err != nil {
-		return fmt.Errorf("failed to create tmp tx file for fee calc: %v", err)
+		return fmt.Errorf("failed to create tmp tx file for fee calc: \n%v", err)
 	}
 	minFee, err := fs.calculateMinimumFee(utxoDetails, paymentDetails, tmpFile, paramsFile)
 	if err != nil {
-		return fmt.Errorf("failed to calculate min fee: %v", err)
+		return fmt.Errorf("failed to calculate min fee: \n%v", err)
 	}
 	log.Infof("Calculated minimum fee: %d", minFee)
 	totalADAinLovelace := 0
@@ -189,15 +189,15 @@ func (fs *FundSender) payMultiple(sourceAddress, signingKeyFile string, paymentD
 	txOutAdaAmount := utxoDetails.ADABalance - totalADAinLovelace - minFee
 	err = fs.createRawTxFile(utxoDetails, sourceAddress, rawFile, paymentDetails, slot, txOutAdaAmount, minFee, paymentTokenDetails)
 	if err != nil {
-		return fmt.Errorf("failed to create raw tx file for payment: %v", err)
+		return fmt.Errorf("failed to create raw tx file for payment: \n%v", err)
 	}
 	err = fs.signTransactionFile(rawFile, signingKeyFile, txSignedFile)
 	if err != nil {
-		return fmt.Errorf("failed to sign tx file for send: %v", err)
+		return fmt.Errorf("failed to sign tx file for send: \n%v", err)
 	}
 	err = fs.sendTransaction(txSignedFile)
 	if err != nil {
-		return fmt.Errorf("failed to send signed tx: %v", err)
+		return fmt.Errorf("failed to send signed tx: \n%v", err)
 	}
 	return nil
 }

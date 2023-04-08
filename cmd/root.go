@@ -92,10 +92,10 @@ func init() {
 	rootCmd.Flags().Bool("dry-run", false, "If set to true will print the command and args passed to cardano-cli")
 	parseLevel, err := log.ParseLevel(logLevel)
 	if err != nil {
-		log.SetLevel(parseLevel)
+		log.Errorf("failed to set log-level: %s", logLevel)
 		return
 	}
-	log.Errorf("failed to set log-level: %s", logLevel)
+	log.SetLevel(parseLevel)
 }
 
 // initConfig reads in config file and ENV variables if set.

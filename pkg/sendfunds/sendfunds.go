@@ -125,7 +125,7 @@ func (fs *FundSender) createRawTxFile(utxo *FullUTXO, sourceAddress, outFile str
 	rawTxArgs := buildRawTransactionArgs(utxo, sourceAddress, outFile, currentSlot, txOutAdaAmount, minFee, paymentAddresses, txOutTokenAmounts)
 	log.Debugf("%s", rawTxArgs)
 	buildRawReturn, err := fs.runner.RunCardanoCmd(rawTxArgs)
-	log.Debugf("%s", string(buildRawReturn))
+	log.Debugf("%s", buildRawReturn)
 	if err != nil {
 		return fmt.Errorf("stdin: %s stderr: %v", buildRawReturn, err)
 	}
@@ -204,11 +204,20 @@ func (fs *FundSender) payMultiple(sourceAddress, signingKeyFile string, paymentD
 
 func generateTokenDetailsAndVerify(utxo *FullUTXO, paymentDetails map[string]PaymentDetails) ([]TokenDetails, error) {
 	sendTotals := make(map[string]int)
+	var lovelaceSendTotal int
 	var returnTokens []TokenDetails
-	for _, paymentDetail := range paymentDetails {
+	minimumLovelace := 1150770
+	for paymentAddress, paymentDetail := range paymentDetails {
+		if paymentDetail.AdaAmount < minimumLovelace {
+			return nil, fmt.Errorf("individual send amount to: %s in lovelace is: %d - this is below the minimum allowed amount per address of %d", paymentAddress, paymentDetail.AdaAmount, minimumLovelace)
+		}
+		lovelaceSendTotal += paymentDetail.AdaAmount
 		for _, tokenDetail := range paymentDetail.PaymentTokens {
 			sendTotals[tokenDetail.TokenID] += tokenDetail.TokenAmount
 		}
+	}
+	if utxo.ADABalance < lovelaceSendTotal {
+		return nil, fmt.Errorf("total send amount for lovelace is %d - this is greater than source wallet balance of %d", lovelaceSendTotal, utxo.ADABalance)
 	}
 	for tokenID, sendTokenAmount := range sendTotals {
 		if utxo.TokenBalances[tokenID] < sendTokenAmount {

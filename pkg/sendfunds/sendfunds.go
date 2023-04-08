@@ -33,10 +33,11 @@ func (fs *FundSender) RunSendFunds(startAddress, signingKeyFile string, paymentA
 	if err != nil {
 		return fmt.Errorf("failed to create UTXO from start address: %s with: %v", startAddress, err)
 	}
-	log.Infof("Lovelace Balance Before: %d", balance.ADABalance)
+	balanceOutputString := fmt.Sprintf("Lovelace Balance Before: %d\n", balance.ADABalance)
 	for idx, tokenBalance := range balance.TokenBalances {
-		log.Infof("Token Balance Before: %s + %d", idx, tokenBalance)
+		balanceOutputString += fmt.Sprintf("Token Balance Before: %s + %d\n", idx, tokenBalance)
 	}
+	log.Infof("%s", balanceOutputString)
 	err = fs.payMultiple(startAddress, signingKeyFile, paymentAddressesWithTokens)
 	if err != nil {
 		return fmt.Errorf("failed to pay multiple wallets with: %v", err)
@@ -45,10 +46,11 @@ func (fs *FundSender) RunSendFunds(startAddress, signingKeyFile string, paymentA
 	if err != nil {
 		return fmt.Errorf("failed to create UTXO from start address: %s with: %v", startAddress, err)
 	}
-	log.Infof("Lovelace Balance After: %+v\n", newBalance.ADABalance)
+	newBalanceOutputString := fmt.Sprintf("Lovelace Balance After: %d\n", newBalance.ADABalance)
 	for idx, tokenBalance := range newBalance.TokenBalances {
-		log.Infof("Token Balance Before: %s + %d", idx, tokenBalance)
+		newBalanceOutputString += fmt.Sprintf("Token Balance After: %s + %d\n", idx, tokenBalance)
 	}
+	log.Infof("%s", newBalanceOutputString)
 	return nil
 }
 
@@ -174,7 +176,7 @@ func (fs *FundSender) payMultiple(sourceAddress, signingKeyFile string, paymentD
 	if err != nil {
 		return fmt.Errorf("failed to calculate min fee: %v", err)
 	}
-	log.Infof("calculate min fee: %d", minFee)
+	log.Infof("Calculated minimum fee: %d", minFee)
 	totalADAinLovelace := 0
 	for _, paymentDetail := range paymentDetails {
 		totalADAinLovelace += paymentDetail.AdaAmount

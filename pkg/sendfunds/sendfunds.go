@@ -31,7 +31,8 @@ type TipQuery struct {
 func (fs *FundSender) RunSendFunds(startAddress, signingKeyFile string, paymentAddressesWithTokens map[string]PaymentDetails) error {
 	balance, err := fs.createUTXOFromAddress(startAddress)
 	if err != nil {
-		return fmt.Errorf("failed to create UTXO from start address: %s with: %v", startAddress, err)
+		log.Errorf("failed to create UTXO from start address: %s with: %v", startAddress, err)
+		return nil
 	}
 	balanceOutputString := fmt.Sprintf("Lovelace Balance Before: %d\n", balance.ADABalance)
 	balanceOutputString += "Token Balances Before:\n"
@@ -41,11 +42,13 @@ func (fs *FundSender) RunSendFunds(startAddress, signingKeyFile string, paymentA
 	log.Infof("%s", balanceOutputString)
 	err = fs.payMultiple(startAddress, signingKeyFile, paymentAddressesWithTokens)
 	if err != nil {
-		return fmt.Errorf("failed to pay multiple wallets with: %v", err)
+		log.Errorf("failed to pay multiple wallets with: %v", err)
+		return nil
 	}
 	newBalance, err := fs.createUTXOFromAddress(startAddress)
 	if err != nil {
-		return fmt.Errorf("failed to create UTXO from start address: %s with: %v", startAddress, err)
+		log.Errorf("failed to create UTXO from start address: %s with: %v", startAddress, err)
+		return nil
 	}
 	newBalanceOutputString := fmt.Sprintf("Lovelace Balance After: %d\n", newBalance.ADABalance)
 	newBalanceOutputString += "Token Balances After:\n"
@@ -70,7 +73,7 @@ func (fs *FundSender) createParamsFile(paramsFile string) error {
 func (fs *FundSender) sendTransaction(txSignedFile string) error {
 	commandArgs := []string{"transaction", "submit", "--tx-file", txSignedFile, fs.network, fs.magic}
 	txSubmitReturn, err := fs.runner.RunCardanoCmd(commandArgs)
-	log.Infof("%s", string(txSubmitReturn))
+	log.Debugf("%s", txSubmitReturn)
 	if err != nil {
 		return fmt.Errorf("stdin: %s stderr: %v", txSubmitReturn, err)
 	}

@@ -21,9 +21,7 @@ export SIGNING_KEY_FILE=/path/to/source/payment.skey
 ccli-tz sendfunds --payment-file ~/some/path/to/payment.yml --testnet-magic 1
 
 # mainnet requires no flag
-SIGNING_KEY_FILE=/path/to/source/payment.skey ccli-tz sendfunds --payment-file ~/some/path/to/payment.yml 
-
-This will 
+SIGNING_KEY_FILE=/path/to/source/payment.skey ccli-tz sendfunds --payment-file ~/some/path/to/payment.yml
 `,
 	RunE: RunSendFunds,
 }

@@ -34,7 +34,7 @@ func (fs *FundSender) RunSendFunds(startAddress, signingKeyFile string, paymentA
 		log.Errorf("failed to create UTXO from start address: %s with: %v", startAddress, err)
 		return nil
 	}
-	balanceOutputString := fmt.Sprintf("Lovelace Balance Before: %d\n", balance.ADABalance)
+	balanceOutputString := fmt.Sprintf("Lovelace Balance Before: %d\n", balance.LovelaceBalance)
 	balanceOutputString += "Token Balances Before:\n"
 	for idx, tokenBalance := range balance.TokenBalances {
 		balanceOutputString += fmt.Sprintf("  %s: %d\n", idx, tokenBalance)
@@ -50,7 +50,7 @@ func (fs *FundSender) RunSendFunds(startAddress, signingKeyFile string, paymentA
 		log.Errorf("failed to create UTXO from start address: %s with: \n%v", startAddress, err)
 		return nil
 	}
-	newBalanceOutputString := fmt.Sprintf("Lovelace Balance After: %d\n", newBalance.ADABalance)
+	newBalanceOutputString := fmt.Sprintf("Lovelace Balance After: %d\n", newBalance.LovelaceBalance)
 	newBalanceOutputString += "Token Balances After:\n"
 	for idx, tokenBalance := range newBalance.TokenBalances {
 		newBalanceOutputString += fmt.Sprintf("  %s: %d\n", idx, tokenBalance)
@@ -186,7 +186,7 @@ func (fs *FundSender) payMultiple(sourceAddress, signingKeyFile string, paymentD
 	for _, paymentDetail := range paymentDetails {
 		totalADAinLovelace += paymentDetail.AdaAmount
 	}
-	txOutAdaAmount := utxoDetails.ADABalance - totalADAinLovelace - minFee
+	txOutAdaAmount := utxoDetails.LovelaceBalance - totalADAinLovelace - minFee
 	err = fs.createRawTxFile(utxoDetails, sourceAddress, rawFile, paymentDetails, slot, txOutAdaAmount, minFee, paymentTokenDetails)
 	if err != nil {
 		return fmt.Errorf("failed to create raw tx file for payment: \n%v", err)
@@ -216,8 +216,8 @@ func generateTokenDetailsAndVerify(utxo *FullUTXO, paymentDetails map[string]Pay
 			sendTotals[tokenDetail.TokenID] += tokenDetail.TokenAmount
 		}
 	}
-	if utxo.ADABalance < lovelaceSendTotal {
-		return nil, fmt.Errorf("total send amount for lovelace is %d - this is greater than source wallet balance of %d", lovelaceSendTotal, utxo.ADABalance)
+	if utxo.LovelaceBalance < lovelaceSendTotal {
+		return nil, fmt.Errorf("total send amount for lovelace is %d - this is greater than source wallet balance of %d", lovelaceSendTotal, utxo.LovelaceBalance)
 	}
 	for tokenID, sendTokenAmount := range sendTotals {
 		if utxo.TokenBalances[tokenID] < sendTokenAmount {

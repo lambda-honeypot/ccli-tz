@@ -57,6 +57,34 @@ Override config:
 $ ./ccli-tz current --testnet-magic 1 --config ~/other_path/.ccli-tz.yaml
 ```
 
+### Send funds
+
+Allows you to send funds to multiple wallets at once defined in a simple yaml file. Example file:
+
+```yaml
+sourceAddress: "addr1q8q566cvhawynjmw008u5xlzkqaplx33vjhs82ec7f2vzt7m9dtqxjj5kv4u40r5ss7dsy679zcw9xkm07kasdg6u4hs3azrhh"
+targetAddresses:
+  addr1q8a5gtz7qv8cccy5tymwwansn9m5zwm9kjkt55eqyukrm4fk9mk69u550yut4hhf5cyqu5nmh8jpw57lhxvhwqgx5sxqcydlqg:
+    lovelaceAmount: 1150770
+  addr1qyl66psd5nrwpd85ddne2x5reg006sqyzfallkeeuenydkh0ays4l5jylz7v4cwvgrwnvqcthn4tjk4g6lcuw567js6sphzc2m:
+    lovelaceAmount: 1150770
+    paymentTokens:
+      - tokenID: 1815bee29d9d1eabf78b7f21f29ae55cbad8d06fa470a65ddbf98156.484f4e4559
+        tokenAmount: 1
+```
+
+This builds, signs and submits the transaction in one step. It requires the path to the signing key file to sign the transaction - this is supplied from an environment variable like so:
+```shell
+$ SIGNING_KEY_FILE=/path/to/source/payment.skey ccli-tz sendfunds --payment-file ~/some/path/to/payment.yml
+```
+
+You could also export the environment variable separately:
+
+```shell
+$ export SIGNING_KEY_FILE=/path/to/source/payment.skey 
+$ ccli-tz sendfunds --payment-file ~/some/path/to/payment.yml --testnet-magic 1
+```
+
 ### Server Mode
 
 Runs the leaderlog in a server mode so that pre-calculated schedules can be accessed via http call. For example:

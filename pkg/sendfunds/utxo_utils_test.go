@@ -17,7 +17,7 @@ ae7828ff0c6d607a279aba9e483617fc5ea423b1bf890bbe1b093007c791cadf     0        40
 		Expect(len(utxo.Rows)).To(Equal(1))
 		Expect(utxo.Address).To(Equal("addr1_somehash"))
 		Expect(utxo.TXCount).To(Equal(1))
-		Expect(utxo.ADABalance).To(Equal(4015245989))
+		Expect(utxo.LovelaceBalance).To(Equal(4015245989))
 
 		firstRow := utxo.Rows[0]
 		Expect(firstRow.Hash).To(Equal("ae7828ff0c6d607a279aba9e483617fc5ea423b1bf890bbe1b093007c791cadf"))
@@ -39,7 +39,7 @@ b5dfee5e9562cdaff11b9de28ee404d4ceb6d4617f5e90180966df2b12d77ac8     0        15
 		Expect(utxo.Address).To(Equal("addr2_somehash"))
 		Expect(len(utxo.Rows)).To(Equal(1))
 		Expect(utxo.TXCount).To(Equal(1))
-		Expect(utxo.ADABalance).To(Equal(1520359733))
+		Expect(utxo.LovelaceBalance).To(Equal(1520359733))
 
 		firstRow := utxo.Rows[0]
 		Expect(firstRow.Hash).To(Equal("b5dfee5e9562cdaff11b9de28ee404d4ceb6d4617f5e90180966df2b12d77ac8"))
@@ -56,7 +56,7 @@ b5dfee5e9562cdaff11b9de28ee404d4ceb6d4617f5e90180966df2b12d77ac8     0        15
 		Expect(utxo.Address).To(Equal("addr5_somehash"))
 		Expect(len(utxo.Rows)).To(Equal(1))
 		Expect(utxo.TXCount).To(Equal(1))
-		Expect(utxo.ADABalance).To(Equal(6407284))
+		Expect(utxo.LovelaceBalance).To(Equal(6407284))
 
 		Expect(len(utxo.TokenBalances)).To(Equal(15))
 		Expect(utxo.TokenBalances["2f4157f71feaca0afb3122c21050ef82f8d39b6266075b17ba4a7b6a.TYHoskinsons"]).To(Equal(1))

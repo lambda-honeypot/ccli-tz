@@ -1,6 +1,7 @@
 package sendfunds
 
 import (
+	"errors"
 	"github.com/golang/mock/gomock"
 	mock_leader "github.com/lambda-honeypot/ccli-tz/pkg/leader/mocks"
 	. "github.com/onsi/ginkgo"
@@ -34,14 +35,14 @@ TxHash                                 TxIx        Amount
 		mockRunner.EXPECT().RunCardanoCmd(gomock.Any()).Return(exampleTXs, nil)
 		utxo, err := fundSender.createUTXOFromAddress("something")
 		Expect(err).ToNot(HaveOccurred())
-		Expect(utxo.ADABalance).To(Equal(1000069816722))
+		Expect(utxo.LovelaceBalance).To(Equal(1000069816722))
 		Expect(utxo.TXCount).To(Equal(1))
 	})
 })
 
 var _ = Describe("generateTokenDetailsAndVerify", func() {
 	It("should produce the expected balances with no tokens", func() {
-		utxoDetails := generateTestUTXO(map[string]int{})
+		utxoDetails := generateTestUTXO(map[string]int{}, 100000000)
 		paymentAddressesWithTokens := map[string]PaymentDetails{
 			"addr1qy5wy8wkl4kkgzstdke8wgnz6q0qfxr3dmp4whf09f59nz9jh2hy3lgnjzf8gtqhu34hcv0g7xc2v9qdl63c2qvqzuts2r9ryl": {AdaAmount: 21415881},
 			"addr1q8k63n24xq4qkzh8skjdjjuph5eywggkdhk6sv06qscwd7zh5y07rjxpf9r407yuu0v9u98c8hfk0462y6hck3fyyaxs24xupl": {AdaAmount: 3717996},
@@ -52,10 +53,9 @@ var _ = Describe("generateTokenDetailsAndVerify", func() {
 		Expect(err).ToNot(HaveOccurred())
 		Expect(paymentTokenDetails).To(Equal(expectedTokens))
 	})
-
 	It("should produce the expected balances with one token", func() {
 		token1 := "2f4157f71feaca0afb3122c21050ef82f8d39b6266075b17ba4a7b6a.TYHoskinsons"
-		utxoDetails := generateTestUTXO(map[string]int{token1: 100})
+		utxoDetails := generateTestUTXO(map[string]int{token1: 100}, 100000000)
 		paymentAddressesWithTokens := map[string]PaymentDetails{
 			"addr1qy5wy8wkl4kkgzstdke8wgnz6q0qfxr3dmp4whf09f59nz9jh2hy3lgnjzf8gtqhu34hcv0g7xc2v9qdl63c2qvqzuts2r9ryl": {AdaAmount: 21415881, PaymentTokens: []TokenDetails{{token1, 9}}},
 			"addr1q8k63n24xq4qkzh8skjdjjuph5eywggkdhk6sv06qscwd7zh5y07rjxpf9r407yuu0v9u98c8hfk0462y6hck3fyyaxs24xupl": {AdaAmount: 3717996, PaymentTokens: []TokenDetails{{token1, 3}}},
@@ -66,12 +66,11 @@ var _ = Describe("generateTokenDetailsAndVerify", func() {
 		Expect(err).ToNot(HaveOccurred())
 		Expect(paymentTokenDetails).To(Equal(expectedTokens))
 	})
-
 	It("should produce the expected balances with multiple tokens", func() {
 		token1 := "2f4157f71feaca0afb3122c21050ef82f8d39b6266075b17ba4a7b6a.TYHoskinsons"
 		token2 := "2f4157f71feaca0afb3122c21050ef82f8d39b6266075b17ba4a7b6a.MegaHoskinsons"
 		token3 := "1815bee29d9d1eabf78b7f21f29ae55cbad8d06fa470a65ddbf98156.HONEY"
-		utxoDetails := generateTestUTXO(map[string]int{token1: 100, token2: 50, token3: 80})
+		utxoDetails := generateTestUTXO(map[string]int{token1: 100, token2: 50, token3: 80}, 100000000)
 		paymentAddressesWithTokens := map[string]PaymentDetails{
 			"addr1qy5wy8wkl4kkgzstdke8wgnz6q0qfxr3dmp4whf09f59nz9jh2hy3lgnjzf8gtqhu34hcv0g7xc2v9qdl63c2qvqzuts2r9ryl": {AdaAmount: 21415881, PaymentTokens: []TokenDetails{
 				{token1, 9},
@@ -97,5 +96,18 @@ var _ = Describe("generateTokenDetailsAndVerify", func() {
 		paymentTokenDetails, err := generateTokenDetailsAndVerify(utxoDetails, paymentAddressesWithTokens)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(paymentTokenDetails).Should(ContainElements(expectedTokens))
+	})
+	It("should fail when the source lovelace balance is lower than the target send amount", func() {
+		utxoDetails := generateTestUTXO(map[string]int{}, 10000000)
+		paymentAddressesWithTokens := map[string]PaymentDetails{
+			"addr1qy5wy8wkl4kkgzstdke8wgnz6q0qfxr3dmp4whf09f59nz9jh2hy3lgnjzf8gtqhu34hcv0g7xc2v9qdl63c2qvqzuts2r9ryl": {AdaAmount: 21415881},
+			"addr1q8k63n24xq4qkzh8skjdjjuph5eywggkdhk6sv06qscwd7zh5y07rjxpf9r407yuu0v9u98c8hfk0462y6hck3fyyaxs24xupl": {AdaAmount: 3717996},
+			"addr1q9fdv824xyfta60g47rq8pjy0ptsuexjlxjg2fvecw40jcsxqxwwhd4zts3nk07272nul2uyk7wgvgpyw3thdktmtpqq6427kd": {AdaAmount: 33818574},
+		}
+		var expectedTokens []TokenDetails
+		paymentTokenDetails, err := generateTokenDetailsAndVerify(utxoDetails, paymentAddressesWithTokens)
+		Expect(err).To(HaveOccurred())
+		Expect(err).To(MatchError(errors.New("total send amount for lovelace is 58952451 - this is greater than source wallet balance of 10000000")))
+		Expect(paymentTokenDetails).To(Equal(expectedTokens))
 	})
 })

@@ -89,17 +89,6 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().Bool("dry-run", false, "If set to true will print the command and args passed to cardano-cli")
-	//level, err := rootCmd.PersistentFlags().GetString("log-level")
-	//if err != nil {
-	//	log.Errorf("failed to get log-level with err: %v", err)
-	//	return
-	//}
-	//parseLevel, err := log.ParseLevel(level)
-	//if err != nil {
-	//	log.Errorf("failed to set log-level: %s with err: %v", level, err)
-	//	return
-	//}
-	//log.SetLevel(parseLevel)
 }
 
 // initConfig reads in config file and ENV variables if set.

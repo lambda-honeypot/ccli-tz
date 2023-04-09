@@ -7,11 +7,11 @@ import (
 )
 
 type FullUTXO struct {
-	Address       string
-	ADABalance    int
-	TokenBalances map[string]int
-	TXCount       int
-	Rows          []UTXORow
+	Address         string
+	LovelaceBalance int
+	TokenBalances   map[string]int
+	TXCount         int
+	Rows            []UTXORow
 }
 
 func NewFullUTXO() FullUTXO {
@@ -20,7 +20,7 @@ func NewFullUTXO() FullUTXO {
 }
 
 func (f *FullUTXO) addRow(row UTXORow) {
-	f.ADABalance += row.LovelaceBalance
+	f.LovelaceBalance += row.LovelaceBalance
 	f.TXCount++
 	for tokenID, tokenAmount := range row.Tokens {
 		f.TokenBalances[tokenID] += tokenAmount

@@ -58,7 +58,7 @@ var _ = Describe("Build transaction Payment No Tokens", func() {
 	}
 
 	It("should produce tx output correctly with many payment addresses and no source tokens", func() {
-		aUTXO := generateTestUTXO(map[string]int{})
+		aUTXO := generateTestUTXO(map[string]int{}, 999)
 		sourceAddress := "addr1q8q566cvhawynjmw008u5xlzkqaplx33vjhs82ec7f2vzt7m9dtqxjj5kv4u40r5ss7dsy679zcw9xkm07kasdg6u4hs3azrhh"
 		fileName := "/tmp/pay_multi3100205435/tx.raw"
 		currentSlot := 48240738
@@ -73,7 +73,7 @@ var _ = Describe("Build transaction Payment No Tokens", func() {
 		aUTXO := generateTestUTXO(map[string]int{
 			"2f4157f71feaca0afb3122c21050ef82f8d39b6266075b17ba4a7b6a.TYHoskinsons": 1,
 			"1815bee29d9d1eabf78b7f21f29ae55cbad8d06fa470a65ddbf98156.HONEY":        1,
-		})
+		}, 999)
 		sourceAddress := "addr1q8q566cvhawynjmw008u5xlzkqaplx33vjhs82ec7f2vzt7m9dtqxjj5kv4u40r5ss7dsy679zcw9xkm07kasdg6u4hs3azrhh"
 		fileName := "/tmp/pay_multi3100205435/tx.raw"
 		currentSlot := 48240738
@@ -99,7 +99,7 @@ var _ = Describe("Build transaction Payment No Tokens", func() {
 			"--tx-out", "addr1qy952ujwhtead56xsrwycjqwsr7hzsy6p8jgqrraxhnmj3h6tqesle4sxk6vuhem9sw9843wp48tsyv9xh2gkvch7qdsx8v75z+1000000",
 			"--tx-out", "addr1qysfnqjx7rpg2l8g8ynjefwly5uftu5anqj3ze6939ywewm9nlxjsyf63x8tkxjagd70lea98mawg80k8lvjv2zma0fsq7xzls+1000000",
 			"--invalid-hereafter", "48250738", "--fee", "239685", "--out-file", "/tmp/pay_multi3100205435/tx.raw"}
-		aUTXO := generateTestUTXO(map[string]int{"2f4157f71feaca0afb3122c21050ef82f8d39b6266075b17ba4a7b6a.TYHoskinsons": 1})
+		aUTXO := generateTestUTXO(map[string]int{"2f4157f71feaca0afb3122c21050ef82f8d39b6266075b17ba4a7b6a.TYHoskinsons": 1}, 999)
 		sourceAddress := "addr1q8q566cvhawynjmw008u5xlzkqaplx33vjhs82ec7f2vzt7m9dtqxjj5kv4u40r5ss7dsy679zcw9xkm07kasdg6u4hs3azrhh"
 		fileName := "/tmp/pay_multi3100205435/tx.raw"
 		currentSlot := 48240738
@@ -115,7 +115,7 @@ var _ = Describe("Build transaction Payment No Tokens", func() {
 			"--tx-out", "addr1q8q566cvhawynjmw008u5xlzkqaplx33vjhs82ec7f2vzt7m9dtqxjj5kv4u40r5ss7dsy679zcw9xkm07kasdg6u4hs3azrhh+193402911+1 2f4157f71feaca0afb3122c21050ef82f8d39b6266075b17ba4a7b6a.TYHoskinsons",
 			"--tx-out", "addr1qxgtvpa3rvg3snl63vpjfs2s56fcyuksvhxhmaxldx0d9744l86svtmlgys63qgnggfnl6v9hwjflde37g9ys2wldy0q8ae6ah+1253293",
 			"--invalid-hereafter", "69250738", "--fee", "168685", "--out-file", "/tmp/pay_multi3100209999/tx.raw"}
-		aUTXO := generateTestUTXO(map[string]int{"2f4157f71feaca0afb3122c21050ef82f8d39b6266075b17ba4a7b6a.TYHoskinsons": 1})
+		aUTXO := generateTestUTXO(map[string]int{"2f4157f71feaca0afb3122c21050ef82f8d39b6266075b17ba4a7b6a.TYHoskinsons": 1}, 999)
 		sourceAddress := "addr1q8q566cvhawynjmw008u5xlzkqaplx33vjhs82ec7f2vzt7m9dtqxjj5kv4u40r5ss7dsy679zcw9xkm07kasdg6u4hs3azrhh"
 		fileName := "/tmp/pay_multi3100209999/tx.raw"
 		currentSlot := 69240738
@@ -131,7 +131,7 @@ var _ = Describe("Build transaction Payment No Tokens", func() {
 			"--tx-out", "addr1q8q566cvhawynjmw008u5xlzkqaplx33vjhs82ec7f2vzt7m9dtqxjj5kv4u40r5ss7dsy679zcw9xkm07kasdg6u4hs3azrhh+193402911+1 2f4157f71feaca0afb3122c21050ef82f8d39b6266075b17ba4a7b6a.TYHoskinsons",
 			"--tx-out", "addr1qxgtvpa3rvg3snl63vpjfs2s56fcyuksvhxhmaxldx0d9744l86svtmlgys63qgnggfnl6v9hwjflde37g9ys2wldy0q8ae6ah+1253293",
 			"--invalid-hereafter", "69250738", "--fee", "168685", "--out-file", "/tmp/pay_multi3100209999/tx.raw"}
-		aUTXO := generateTestUTXO(map[string]int{"2f4157f71feaca0afb3122c21050ef82f8d39b6266075b17ba4a7b6a.TYHoskinsons": 1})
+		aUTXO := generateTestUTXO(map[string]int{"2f4157f71feaca0afb3122c21050ef82f8d39b6266075b17ba4a7b6a.TYHoskinsons": 1}, 999)
 		sourceAddress := "addr1q8q566cvhawynjmw008u5xlzkqaplx33vjhs82ec7f2vzt7m9dtqxjj5kv4u40r5ss7dsy679zcw9xkm07kasdg6u4hs3azrhh"
 		fileName := "/tmp/pay_multi3100209999/tx.raw"
 		currentSlot := 69240738
@@ -149,7 +149,7 @@ var _ = Describe("Build transaction Payment No Tokens", func() {
 		aUTXO := generateTestUTXO(map[string]int{
 			"2f4157f71feaca0afb3122c21050ef82f8d39b6266075b17ba4a7b6a.TYHoskinsons": 1,
 			"1815bee29d9d1eabf78b7f21f29ae55cbad8d06fa470a65ddbf98156.HONEY":        1,
-		})
+		}, 999)
 		sourceAddress := "addr1q8q566cvhawynjmw008u5xlzkqaplx33vjhs82ec7f2vzt7m9dtqxjj5kv4u40r5ss7dsy679zcw9xkm07kasdg6u4hs3azrhh"
 		fileName := "/tmp/pay_multi3100209999/tx.raw"
 		currentSlot := 69240738
@@ -184,7 +184,7 @@ var _ = Describe("Build transaction Payment With Tokens", func() {
 		"--invalid-hereafter", "85250738", "--fee", "178685", "--out-file", "/tmp/pay_multi3100208888/tx.raw"}
 
 	It("should correctly build tx output when sending one payment with one token", func() {
-		aUTXO := generateTestUTXO(map[string]int{"2f4157f71feaca0afb3122c21050ef82f8d39b6266075b17ba4a7b6a.TYHoskinsons": 100, "1815bee29d9d1eabf78b7f21f29ae55cbad8d06fa470a65ddbf98156.HONEY": 50})
+		aUTXO := generateTestUTXO(map[string]int{"2f4157f71feaca0afb3122c21050ef82f8d39b6266075b17ba4a7b6a.TYHoskinsons": 100, "1815bee29d9d1eabf78b7f21f29ae55cbad8d06fa470a65ddbf98156.HONEY": 50}, 999)
 		sourceAddress := "addr1q8q566cvhawynjmw008u5xlzkqaplx33vjhs82ec7f2vzt7m9dtqxjj5kv4u40r5ss7dsy679zcw9xkm07kasdg6u4hs3azrhh"
 		fileName := "/tmp/pay_multi3100208888/tx.raw"
 		currentSlot := 85240738
@@ -198,7 +198,8 @@ var _ = Describe("Build transaction Payment With Tokens", func() {
 	It("should correctly build tx output when sending one payment with two tokens", func() {
 		aUTXO := generateTestUTXO(map[string]int{
 			"2f4157f71feaca0afb3122c21050ef82f8d39b6266075b17ba4a7b6a.TYHoskinsons":   100,
-			"45ace7db4aec426e119445e867816f31cdebc014b4f642fc1decda41.HONEYChristmas": 80})
+			"45ace7db4aec426e119445e867816f31cdebc014b4f642fc1decda41.HONEYChristmas": 80},
+			999)
 		sourceAddress := "addr1q8q566cvhawynjmw008u5xlzkqaplx33vjhs82ec7f2vzt7m9dtqxjj5kv4u40r5ss7dsy679zcw9xkm07kasdg6u4hs3azrhh"
 		fileName := "/tmp/pay_multi3100208888/tx.raw"
 		currentSlot := 85240738
@@ -210,12 +211,12 @@ var _ = Describe("Build transaction Payment With Tokens", func() {
 	})
 })
 
-func generateTestUTXO(tokens map[string]int) *FullUTXO {
+func generateTestUTXO(tokens map[string]int, lovelaceBalance int) *FullUTXO {
 	return &FullUTXO{
-		Address:       "",
-		ADABalance:    999,
-		TokenBalances: tokens, // Bit of a hack as we only have one row the balance is value of the row
-		TXCount:       1,
+		Address:         "",
+		LovelaceBalance: lovelaceBalance,
+		TokenBalances:   tokens, // Bit of a hack as we only have one row the balance is value of the row
+		TXCount:         1,
 		Rows: []UTXORow{
 			{
 				Hash:            "1e7fd3c8f66586035f64192c1c09d2438ee9ccac30f6fcd7215ac4d6656d7d80",

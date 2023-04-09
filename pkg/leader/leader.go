@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/lambda-honeypot/ccli-tz/pkg/config"
+	"github.com/lambda-honeypot/ccli-tz/pkg/utils"
 	log "github.com/sirupsen/logrus"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -14,6 +16,11 @@ type CommandRunner interface {
 	RunCardanoCmd(trimmedArgs []string) (string, error)
 }
 
+type OutputJSON struct {
+	Epoch    int           `json:"epoch"`
+	PoolID   string        `json:"poolID"`
+	Schedule []ScheduleRow `json:"schedule"`
+}
 type ScheduleRow struct {
 	BlockCount    int
 	SlotNumber    int
@@ -24,8 +31,8 @@ type ConfigGetter interface {
 	GetConfig() config.CfgYaml
 }
 
-func CreateAndRun(args []string, testnetMagic string, cmdRunner CommandRunner, cfg *config.CfgYaml) error {
-	period := "--" + args[0]
+func CreateAndRun(periodShort string, testnetMagic string, cmdRunner CommandRunner, cfg *config.CfgYaml) error {
+	period := "--" + periodShort
 	shelleyGenesisFile := cfg.GenesisFile
 	vrfKeysFile := cfg.VRFSigningKeyFile
 	poolID := cfg.StakePoolID
@@ -40,22 +47,27 @@ func CreateAndRun(args []string, testnetMagic string, cmdRunner CommandRunner, c
 		return fmt.Errorf("tip not sync'd - please wait until 100.00. Current %s", tipData.SyncProgress)
 	}
 	epoch := tipData.Epoch
-	if args[0] == "next" {
+	if periodShort == "next" {
 		epoch++
 	}
 	fmt.Println(fmt.Sprintf("Calculating for epoch: %d", epoch))
 	leaderArgs := CalculateLeaderArgs(period, shelleyGenesisFile, poolID, vrfKeysFile, testnetMagic)
 	schedule, err := CalcTZSchedule(timeZone, leaderArgs, cmdRunner)
+	outputJSON := OutputJSON{
+		Schedule: schedule,
+		Epoch:    epoch,
+		PoolID:   poolID,
+	}
 	if err != nil {
 		return err
 	}
-	output := GenerateScheduleOutput(schedule, args[0])
-	fmt.Println(output)
+	output := GenerateScheduleOutput(outputJSON, periodShort)
+	fmt.Println(string(output))
 	return nil
 }
 
-func LogOutParams(args []string, testnetMagic string, cfg *config.CfgYaml) {
-	period := "--" + args[0]
+func LogOutParams(periodShort string, testnetMagic string, cfg *config.CfgYaml) {
+	period := "--" + periodShort
 	shelleyGenesisFile := cfg.GenesisFile
 	vrfKeysFile := cfg.VRFSigningKeyFile
 	poolID := cfg.StakePoolID
@@ -63,16 +75,16 @@ func LogOutParams(args []string, testnetMagic string, cfg *config.CfgYaml) {
 	log.Infof("dry-run, would have executed:\n\ncardano-cli %v", trimmedArgs)
 }
 
-func GenerateScheduleOutput(schedule []ScheduleRow, period string) string {
-	if len(schedule) == 0 {
-		return fmt.Sprintf("No schedule blocks for %s epoch", period)
+func GenerateScheduleOutput(outputJSON OutputJSON, period string) []byte {
+	if len(outputJSON.Schedule) == 0 {
+		return []byte(fmt.Sprintf("No schedule blocks for %s epoch", period))
 	}
-	b, err := json.MarshalIndent(schedule, "", "  ")
+	b, err := json.MarshalIndent(outputJSON, "", "  ")
 	if err != nil {
 		fmt.Println(err)
-		return ""
+		return []byte{}
 	}
-	return string(b)
+	return b
 }
 
 func CalcTZSchedule(timeZone string, trimmedArgs []string, runner CommandRunner) ([]ScheduleRow, error) {
@@ -94,9 +106,32 @@ func CalcTZSchedule(timeZone string, trimmedArgs []string, runner CommandRunner)
 	return rows, nil
 }
 
+func GetOutputFilePath(utilsInterface utils.FileUtilsInterface) (string, error) {
+	userPath, err := utilsInterface.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	filePath := filepath.Join(userPath, ".ccli-files")
+	return filePath, nil
+}
+
+func writeOutputToFile(epoch int, output []byte, utilsInterface utils.FileUtilsInterface) error {
+	dir, err := GetOutputFilePath(utilsInterface)
+	if err != nil {
+		return err
+	}
+	err = utilsInterface.MkDir(dir)
+	if err != nil {
+		return err
+	}
+	epochStr := strconv.Itoa(epoch)
+	path := filepath.Join(dir, epochStr+".json")
+	return utilsInterface.WriteFile(path, output)
+}
+
 func splitLine(line string) []string {
 	rawSpaceSplit := strings.Split(strings.TrimSpace(line), "  ")
-	var spaceSplit = []string{}
+	var spaceSplit []string
 	for _, elem := range rawSpaceSplit {
 		if strings.TrimSpace(elem) != "" {
 			spaceSplit = append(spaceSplit, elem)

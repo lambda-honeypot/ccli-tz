@@ -12,6 +12,7 @@ import (
 
 var cfgFile string
 var testnet string
+var logLevel string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -49,10 +50,11 @@ func LeadershipLog(command *cobra.Command, args []string) error {
 		return err
 	}
 	cfg := config.ReadConfig()
+	period := args[0]
 	if dryRun {
-		leader.LogOutParams(args, testnetMagic, cfg)
+		leader.LogOutParams(period, testnetMagic, cfg)
 	} else {
-		err = leader.CreateAndRun(args, testnetMagic, &leader.CmdRunner{}, cfg)
+		err = leader.CreateAndRun(period, testnetMagic, &leader.CmdRunner{}, cfg)
 	}
 	if err != nil {
 		return fmt.Errorf("failed to run leadership log with: %v", err)
@@ -74,20 +76,17 @@ func validateArgs(args []string) error {
 }
 
 func init() {
-	//cobra.OnInitialize(initConfig)
-
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.ccli-tz.yaml)")
+	rootCmd.PersistentFlags().StringVar(&testnet, "testnet-magic", "", "Specify a testnet instead of mainnet")
+	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "info", "set the log-level for the command. Default info")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	rootCmd.Flags().StringVar(&testnet, "testnet-magic", "", "Specify a testnet instead of mainnet")
 	rootCmd.Flags().Bool("dry-run", false, "If set to true will print the command and args passed to cardano-cli")
-	//rootCmd.Flags().Bool("current", false, "Calculate leader log for the current epoch")
-	//rootCmd.Flags().BoolP("timezone", "t", false, "Help message for toggle")
 }
 
 // initConfig reads in config file and ENV variables if set.

@@ -1,3 +1,4 @@
+//revive:disable:comment-spacings This is driven by the response from BQ
 /*
 Copyright © 2022 HONEY <contact@lambda-honeypot.com>
 

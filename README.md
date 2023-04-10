@@ -1,6 +1,6 @@
 ## ccli-tz
 
-A cardano-cli wrapper with send funds and leadership-schedule with time zone adjust. Settings are controlled via config to simplify usage.  
+A cardano-cli wrapper with send funds function and time zone adjusted leadership-schedule. Settings are controlled via config to simplify usage.  
 
 ### Installation
 
